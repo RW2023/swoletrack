@@ -1,14 +1,34 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 
-type ProfilePageProps = {
-    params: { id: string };
-};
+// Tell Next.js we want *no* static pre-rendering:
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+export const revalidate = 0;
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
+// Optional: Return an empty array to confirm no static paths exist
+export async function generateStaticParams() {
+    return [];
+}
+
+// Our fully async page:
+export default async function ProfilePage({
+    params,
+}: {
+    params: { id: string };
+}) {
     const supabase = await createClient();
 
-    // Fetch the profile from Supabase
+    // (Optional) Ensure only the owner sees this page
+    const {
+        data: { user: authUser },
+    } = await supabase.auth.getUser();
+
+    if (!authUser || authUser.id !== params.id) {
+        notFound(); // or redirect("/sign-in")
+    }
+
+    // Fetch the user's profile row
     const { data: profile, error } = await supabase
         .from("profiles")
         .select("id, name, avatar_url")
@@ -16,7 +36,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         .single();
 
     if (error || !profile) {
-        // If profile doesn't exist or there's an error, show a 404
         notFound();
     }
 
