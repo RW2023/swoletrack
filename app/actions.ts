@@ -66,8 +66,15 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  // Redirect to the user's unique profile page
+  if (data?.user) {
+    return redirect(`/profile/${data.user.id}`);
+  }
+
+  // Fallback if, for some reason, there's no user
+  return redirect("/sign-in");
 };
+
 
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
