@@ -36,7 +36,7 @@ export default async function AuthButton() {
   if (user) {
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("name") // or whatever columns you want
+      .select("name, avatar_url")
       .eq("id", user.id)
       .single();
 
@@ -44,11 +44,18 @@ export default async function AuthButton() {
       console.error("Error fetching profile:", error.message);
     }
 
-    // 3) Display the user’s name if found; fallback to email
     const displayName = profile?.name || user.email;
+    const avatarUrl = profile?.avatar_url;
 
     return (
       <div className="flex items-center gap-4">
+        {avatarUrl && (
+          <img
+            src={avatarUrl}
+            alt="Avatar"
+            className="w-8 h-8 object-cover rounded-full border"
+          />
+        )}
         <span className="font-semibold">Welcome,</span> {displayName}!
         <form action={signOutAction}>
           <Button type="submit" variant={"outline"}>
