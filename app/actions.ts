@@ -30,12 +30,19 @@ export const signUpAction = async (formData: FormData) => {
   }
 
   if (data?.user) {
-    await supabase.from("profiles").insert({
-      id: data.user.id,
-      name,
-      avatar_url: "",
-      created_at: new Date().toISOString(),
-    });
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .insert({
+        id: data.user.id,
+        name,
+        avatar_url: "",
+        created_at: new Date().toISOString(),
+      });
+
+    if (profileError) {
+      // Log but don't interrupt signup flow
+      console.error("Profile creation failed:", profileError.message);
+    }
   }
 
   return encodedRedirect(
