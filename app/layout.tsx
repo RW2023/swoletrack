@@ -1,3 +1,4 @@
+import "./globals.css";
 import DeployButton from "@/components/deploy-button";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import HeaderAuth from "@/components/header-auth";
@@ -6,7 +7,7 @@ import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
-import "./globals.css";
+import React from "react";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -25,43 +26,52 @@ const geistSans = Geist({
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground">
+      {/* 
+        1) "flex flex-col min-h-screen" makes the whole viewport
+           a vertical flex container.
+      */}
+      <body className="bg-background text-foreground flex flex-col min-h-screen">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen flex flex-col items-center">
-            <div className="flex-1 w-full flex flex-col gap-20 items-center">
-              <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-                <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-                  <div className="flex gap-5 items-center font-semibold">
-                   
-                  </div>
-                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+          {/* 2) Main is now a flex column that can grow to fill leftover space */}
+          <main className="flex flex-col flex-grow w-full">
+            {/* Nav at the top */}
+            <nav className="w-full border-b border-b-foreground/10 h-16 flex justify-center">
+              <div className="max-w-5xl w-full flex justify-between items-center px-5 py-3 text-sm">
+                <div className="flex gap-5 items-center font-semibold">
+                  {/* If you had a brand/logo link, put it here */}
                 </div>
-              </nav>
-              <div className="flex flex-col gap-20 max-w-5xl p-5">
+                {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+              </div>
+            </nav>
+
+            {/* Page content in the middle, uses flex-grow to push footer down */}
+            <div className="flex-grow w-full flex flex-col gap-20 items-center">
+              <div className="flex flex-col gap-20 max-w-5xl w-full p-5">
                 {children}
               </div>
-
-              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-                <p>
-                  Swole {" "}
-                 <span className="font-semibold">
-                Tracker
-                 </span>
-                </p>
-                <ThemeSwitcher />
-              </footer>
             </div>
           </main>
+
+          {/* 3) Footer at the bottom, after main */}
+          <footer className="w-full border-t mx-auto text-center text-xs gap-8 py-16 flex items-center justify-center">
+            <p>
+              Swole{" "}
+              <span className="font-semibold">
+                Tracker
+              </span>
+            </p>
+            <ThemeSwitcher />
+          </footer>
         </ThemeProvider>
       </body>
     </html>
