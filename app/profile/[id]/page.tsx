@@ -6,39 +6,31 @@ export const dynamicParams = true;
 export const revalidate = 0;
 
 /**
- * Our top-level page is a normal function that
- * receives props synchronously (non-async).
+ * Next 15 expects `params` to be a Promise if
+ * the page is async. So define your type accordingly:
  */
-export default function ProfilePage(props: {
-    params: { id: string };
-    searchParams?: any;
-}) {
-    // Just pass all props to the async child
-    return <ProfileServer {...props} />;
-}
+type ProfilePageProps = {
+    // 'params' is actually a Promise that resolves to your param object
+    params: Promise<{ id: string }>;
+};
 
-async function ProfileServer({
-    params,
-}: {
-    params: { id: string };
-    searchParams?: any;
-}) {
+export default async function ProfilePage({ params }: ProfilePageProps) {
+    // Now you must 'await' params
+    const { id } = await params;
+
     const supabase = await createClient();
-
-    // Check the currently authenticated user
     const {
         data: { user: authUser },
     } = await supabase.auth.getUser();
 
-    if (!authUser || authUser.id !== params.id) {
+    if (!authUser || authUser.id !== id) {
         notFound();
     }
 
-    // Fetch the profile
     const { data: profile, error } = await supabase
         .from("profiles")
         .select("id, name, avatar_url")
-        .eq("id", params.id)
+        .eq("id", id)
         .single();
 
     if (error || !profile) {
