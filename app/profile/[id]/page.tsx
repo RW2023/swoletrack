@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-
+import AvatarUploadForm from "@/components/ui/avatar-upload-form";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
@@ -43,6 +43,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <p>ID: {profile.id}</p>
             <p>Name: {profile.name}</p>
             {profile.avatar_url && <img src={profile.avatar_url} alt="Avatar" />}
+            {profile.avatar_url && (
+                <img src={profile.avatar_url} alt="Avatar" className="my-2 w-24 h-24 object-cover rounded-full" />
+            )}
+
+            {/* Our new avatar upload form */}
+            <AvatarUploadForm />
         </div>
     );
 }
