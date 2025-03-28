@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
-import AvatarUploadForm from "@/components/ui/avatar-upload-form";
+import AvatarUploadForm from "@/app/profile/[id]/avatar-upload-form";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;

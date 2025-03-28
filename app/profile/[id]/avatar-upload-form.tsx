@@ -2,10 +2,11 @@
 "use client";
 
 import React from "react";
+import { updateAvatarAction } from "./actions";
 
 export default function AvatarUploadForm() {
     return (
-        <form action="#">
+        <form action={updateAvatarAction}>
             <label htmlFor="avatarUpload" className="block mb-1 font-semibold">
                 Upload Avatar
             </label>
