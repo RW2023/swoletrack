@@ -57,12 +57,7 @@ export default async function AuthButton() {
           />
         )}
         <span className="font-semibold">Hi,</span> {displayName}!
-        <Link
-          href={`/profile/${user.id}/dashboard`}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          Dashboard
-        </Link>
+       
         <form action={signOutAction}>
           <Button type="submit" variant={"outline"}>
             Sign out
