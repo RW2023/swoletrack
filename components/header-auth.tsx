@@ -56,7 +56,7 @@ export default async function AuthButton() {
             className="w-8 h-8 object-cover rounded-full border"
           />
         )}
-        <span className="font-semibold">Welcome,</span> {displayName}!
+        <span className="font-semibold">Hi,</span> {displayName}!
         <Link
           href={`/profile/${user.id}/dashboard`}
           className="text-sm text-blue-600 hover:underline"
