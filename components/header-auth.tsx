@@ -50,12 +50,15 @@ export default async function AuthButton() {
     return (
       <div className="flex items-center gap-4">
         {avatarUrl && (
-          <img
-            src={avatarUrl}
-            alt="Avatar"
-            className="w-8 h-8 object-cover rounded-full border"
-          />
+          <Link href={`/profile/${user.id}`} className="shrink-0">
+            <img
+              src={avatarUrl}
+              alt="Avatar"
+              className="w-8 h-8 object-cover rounded-full border hover:ring-2 hover:ring-primary"
+            />
+          </Link>
         )}
+
         <span className="font-semibold">Hi,</span> {displayName}!
        
         <form action={signOutAction}>
