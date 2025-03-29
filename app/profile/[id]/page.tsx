@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import AvatarUploadForm from "@/app/profile/[id]/avatar-upload-form";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -56,6 +57,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
             {/* Name */}
             <p className="text-lg font-medium mb-6">Name: {profile.name}</p>
+
+            {/* Dashboard link */}
+            <Link
+                href={`/profile/${id}/dashboard`}
+                className="text-blue-500 hover:underline mb-6 block"
+            >
+                Go to Dashboard
+            </Link>
 
             {/* Avatar upload form */}
             <AvatarUploadForm />
