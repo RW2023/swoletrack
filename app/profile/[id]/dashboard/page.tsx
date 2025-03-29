@@ -20,7 +20,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         notFound();
     }
 
-    // Fetch recent workouts including exercises
+    // Fetch workouts + exercises + sets
     const { data: workouts, error } = await supabase
         .from("workouts")
         .select(`
@@ -31,6 +31,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         exercise: exercises (
           name,
           category
+        ),
+        sets (
+          set_number,
+          reps,
+          weight
         )
       )
     `)
@@ -63,10 +68,24 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                                 <div className="text-sm text-gray-400 mb-2">
                                     {new Date(workout.date).toLocaleDateString()}
                                 </div>
+
                                 {workout.workout_exercises.map((we: any) => (
-                                    <p key={we.id} className="text-sm">
-                                        • {we.exercise.name} <span className="text-gray-500">({we.exercise.category})</span>
-                                    </p>
+                                    <div key={we.id} className="mb-3">
+                                        <p className="font-medium">
+                                            {we.exercise.name}{" "}
+                                            <span className="text-gray-500 text-sm">
+                                                ({we.exercise.category})
+                                            </span>
+                                        </p>
+
+                                        <ul className="ml-4 mt-1 text-sm text-gray-300 list-disc">
+                                            {we.sets.map((set: any, index: number) => (
+                                                <li key={index}>
+                                                    {set.reps} reps @ {set.weight} lbs
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 ))}
                             </li>
                         ))}
