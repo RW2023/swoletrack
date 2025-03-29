@@ -63,7 +63,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-6">Your Dashboard</h1>
-
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Recent Workouts</h2>
                 <Link
