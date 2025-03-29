@@ -1,11 +1,25 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { DeleteWorkoutButton } from "@/components/delete-workout-button"; // 👈 client component
+import { DeleteWorkoutButton } from "@/components/delete-workout-button";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
+
+// ✅ Helper to show category icons
+function getCategoryIcon(category: string) {
+    switch (category) {
+        case "weight_training":
+            return "🏋️‍♂️";
+        case "cardio":
+            return "🔥";
+        case "calisthenics":
+            return "🤸‍♂️";
+        default:
+            return "💪";
+    }
+}
 
 export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -65,14 +79,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                             <li key={workout.id} className="border p-4 rounded shadow-sm">
                                 <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
                                     <span>{new Date(workout.date).toLocaleDateString()}</span>
-                                    <DeleteWorkoutButton workoutId={workout.id} /> {/* ✅ client button */}
+                                    <DeleteWorkoutButton workoutId={workout.id} />
                                 </div>
 
                                 {workout.workout_exercises.map((we: any) => (
                                     <div key={we.id} className="mb-3">
-                                        <p className="font-medium">
-                                            {we.exercise.name}{" "}
-                                            <span className="text-gray-500 text-sm">({we.exercise.category})</span>
+                                        <p className="font-medium flex items-center gap-1">
+                                            <span>{getCategoryIcon(we.exercise.category)}</span>
+                                            {we.exercise.name}
+                                            <span className="text-gray-500 text-sm">
+                                                ({we.exercise.category})
+                                            </span>
                                         </p>
 
                                         <ul className="ml-4 mt-1 text-sm text-gray-300 list-disc">
