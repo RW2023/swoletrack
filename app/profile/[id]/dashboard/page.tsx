@@ -20,10 +20,20 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         notFound();
     }
 
-    // Fetch recent workouts for this user
+    // Fetch recent workouts including exercises
     const { data: workouts, error } = await supabase
         .from("workouts")
-        .select("id, date, notes")
+        .select(`
+      id,
+      date,
+      workout_exercises (
+        id,
+        exercise: exercises (
+          name,
+          category
+        )
+      )
+    `)
         .eq("user_id", user.id)
         .order("date", { ascending: false })
         .limit(5);
@@ -47,11 +57,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </Link>
 
                 {workouts && workouts.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul className="space-y-4">
                         {workouts.map((workout) => (
                             <li key={workout.id} className="border p-4 rounded shadow-sm">
-                                <div className="text-sm text-gray-500">{new Date(workout.date).toLocaleDateString()}</div>
-                                {workout.notes && <p className="mt-1">{workout.notes}</p>}
+                                <div className="text-sm text-gray-400 mb-2">
+                                    {new Date(workout.date).toLocaleDateString()}
+                                </div>
+                                {workout.workout_exercises.map((we: any) => (
+                                    <p key={we.id} className="text-sm">
+                                        • {we.exercise.name} <span className="text-gray-500">({we.exercise.category})</span>
+                                    </p>
+                                ))}
                             </li>
                         ))}
                     </ul>
