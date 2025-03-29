@@ -33,6 +33,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         notFound();
     }
 
+    // ✅ Fetch user's name from the profile table
+    const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .single();
+
+    if (profileError || !profile) {
+        console.error("Error fetching profile name:", profileError?.message);
+        notFound();
+    }
+
+    // ✅ Fetch recent workouts
     const { data: workouts, error } = await supabase
         .from("workouts")
         .select(`
@@ -62,7 +75,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Your Dashboard</h1>
+            <h1 className="text-2xl font-bold mb-6">
+                {profile.name}'s Dashboard
+            </h1>
+
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Recent Workouts</h2>
                 <Link
