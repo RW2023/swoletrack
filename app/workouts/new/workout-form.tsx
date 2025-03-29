@@ -1,13 +1,16 @@
-// app/workouts/new/workout-form.tsx
 "use client";
 
 import { useState } from "react";
+import { logWorkoutAction } from "./actions";
 
 export default function WorkoutForm({ exercises }: { exercises: any[] }) {
     const [exerciseId, setExerciseId] = useState<string>("");
     const [sets, setSets] = useState<{ reps: string; weight: string }[]>([
         { reps: "", weight: "" },
     ]);
+
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     const updateSet = (
         index: number,
@@ -25,15 +28,28 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Send data to server
-        console.log({ exerciseId, sets });
+        setSubmitting(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("exerciseId", exerciseId);
+            formData.append("sets", JSON.stringify(sets));
+            await logWorkoutAction(formData);
+            setSubmitted(true);
+        } catch (err) {
+            console.error("Submission failed", err);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Exercise Picker */}
             <div>
-                <label htmlFor="exercise-select" className="font-medium block mb-1">Select Exercise</label>
+                <label htmlFor="exercise-select" className="font-medium block mb-1">
+                    Select Exercise
+                </label>
                 <select
                     id="exercise-select"
                     value={exerciseId}
@@ -82,11 +98,19 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
                 </button>
             </div>
 
+            {/* Submit feedback */}
+            {submitted && (
+                <p className="text-green-600 font-medium">
+                    Workout logged successfully!
+                </p>
+            )}
+
             <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded"
+                className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+                disabled={submitting}
             >
-                Log Workout
+                {submitting ? "Logging..." : "Log Workout"}
             </button>
         </form>
     );
