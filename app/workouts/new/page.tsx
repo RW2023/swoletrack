@@ -1,8 +1,21 @@
 import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 import WorkoutForm from "./workout-form";
 
 export default async function NewWorkoutPage() {
     const supabase = await createClient();
+
+    // 🔐 Get the authenticated user
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    // 🚫 If not logged in, redirect to sign-in page
+    if (!user) {
+        return redirect("/sign-in");
+    }
+
+    // ✅ Fetch exercises for the dropdown
     const { data: exercises } = await supabase
         .from("exercises")
         .select("id, name, category")
