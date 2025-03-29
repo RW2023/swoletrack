@@ -1,11 +1,14 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
 
-export default async function DashboardPage({ params }: { params: { id: string } }) {
+export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+
     const supabase = await createClient();
 
     // Get logged-in user
@@ -13,7 +16,7 @@ export default async function DashboardPage({ params }: { params: { id: string }
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user || user.id !== params.id) {
+    if (!user || user.id !== id) {
         notFound();
     }
 
@@ -36,6 +39,13 @@ export default async function DashboardPage({ params }: { params: { id: string }
 
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Recent Workouts</h2>
+                <Link
+                    href="/workouts/new"
+                    className="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                >
+                    + Log New Workout
+                </Link>
+
                 {workouts && workouts.length > 0 ? (
                     <ul className="space-y-2">
                         {workouts.map((workout) => (
