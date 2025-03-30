@@ -23,10 +23,12 @@ export async function updateAvatarAction(formData: FormData) {
 
   if (uploadError) {
     console.error("Error uploading avatar:", uploadError.message);
-    return;
+    throw new Error(uploadError.message);
   }
 
-  const avatarUrl = supabase.storage.from("avatars").getPublicUrl(filePath).data.publicUrl;
+  const avatarUrl = supabase.storage
+    .from("avatars")
+    .getPublicUrl(filePath).data.publicUrl;
 
   const { error: updateError } = await supabase
     .from("profiles")
@@ -35,6 +37,7 @@ export async function updateAvatarAction(formData: FormData) {
 
   if (updateError) {
     console.error("Error updating avatar in profile:", updateError.message);
+    throw new Error(updateError.message);
   }
 
   revalidatePath(`/profile/${user.id}`);
