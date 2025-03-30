@@ -36,7 +36,11 @@ function getCategoryIcon(category: string) {
     }
 }
 
-export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DashboardPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
     const { id } = await params;
     const supabase = await createClient();
 
@@ -64,6 +68,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         .select(`
       id,
       date,
+      notes,
       workout_exercises (
         id,
         exercise: exercises (
@@ -96,9 +101,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">
-                {profile.name}'s Dashboard
-            </h1>
+            <h1 className="text-2xl font-bold mb-6">{profile.name}'s Dashboard</h1>
 
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -140,11 +143,21 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
 
                             <ul className="space-y-4 mt-2">
                                 {workouts.map((workout) => (
-                                    <li key={workout.id} className="border p-4 rounded bg-background shadow-sm">
+                                    <li
+                                        key={workout.id}
+                                        className="border p-4 rounded bg-background shadow-sm"
+                                    >
                                         <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
                                             <span>{new Date(workout.date).toLocaleDateString()}</span>
                                             <DeleteWorkoutButton workoutId={workout.id} />
                                         </div>
+
+                                        {/* ✅ Workout Notes */}
+                                        {workout.notes && (
+                                            <p className="text-sm mt-1 text-gray-500 italic">
+                                                📝 {workout.notes}
+                                            </p>
+                                        )}
 
                                         {workout.workout_exercises.map((we: any) => (
                                             <div key={we.id} className="mb-3">

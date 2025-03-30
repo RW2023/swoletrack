@@ -20,6 +20,7 @@ export async function logWorkoutAction(formData: FormData) {
   // 2. Extract workout data
   const exerciseId = formData.get("exerciseId") as string;
   const setsJson = formData.get("sets") as string;
+  const notes = formData.get("notes")?.toString() || null;
 
   if (!exerciseId || !setsJson) {
     console.error("Missing form data");
@@ -28,10 +29,14 @@ export async function logWorkoutAction(formData: FormData) {
 
   const sets = JSON.parse(setsJson);
 
-  // 3. Insert workout
+  // 3. Insert workout with notes
   const { data: workout, error: workoutError } = await supabase
     .from("workouts")
-    .insert({ user_id: user.id, date: new Date() })
+    .insert({
+      user_id: user.id,
+      date: new Date(),
+      notes, // ✅ insert notes
+    })
     .select()
     .single();
 
@@ -71,6 +76,6 @@ export async function logWorkoutAction(formData: FormData) {
     return;
   }
 
-  // 6. Redirect or return success
+  // 6. Redirect to dashboard
   return redirect(`/profile/${user.id}/dashboard`);
 }

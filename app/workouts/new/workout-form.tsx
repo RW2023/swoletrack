@@ -8,6 +8,7 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
     const [sets, setSets] = useState<{ reps: string; weight: string }[]>([
         { reps: "", weight: "" },
     ]);
+    const [notes, setNotes] = useState<string>("");
 
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -34,8 +35,11 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
             const formData = new FormData();
             formData.append("exerciseId", exerciseId);
             formData.append("sets", JSON.stringify(sets));
+            formData.append("notes", notes); // ✅ Include notes
+
             await logWorkoutAction(formData);
             setSubmitted(true);
+            setNotes(""); // Clear after submission
         } catch (err) {
             console.error("Submission failed", err);
         } finally {
@@ -98,7 +102,18 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
                 </button>
             </div>
 
-            {/* Submit feedback */}
+            {/* ✅ Notes Field */}
+            <div>
+                <label className="block font-medium mb-1">Notes (optional)</label>
+                <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="w-full p-2 border rounded"
+                    rows={3}
+                    placeholder="Optional notes for this workout..."
+                />
+            </div>
+
             {submitted && (
                 <p className="text-green-600 font-medium">
                     Workout logged successfully!
