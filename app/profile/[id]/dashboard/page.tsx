@@ -7,7 +7,24 @@ export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
 
-// ✅ Helper to show category icons
+// 🧠 Helper: Get the Monday of the week for any given date
+function getWeekLabel(dateStr: string) {
+    const date = new Date(dateStr);
+    const start = new Date(date);
+    start.setDate(date.getDate() - date.getDay() + 1); // Monday
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+
+    return `Week of ${start.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+    })} – ${end.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+    })}`;
+}
+
+// 🧠 Icon by category
 function getCategoryIcon(category: string) {
     switch (category) {
         case "weight_training":
@@ -33,7 +50,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         notFound();
     }
 
-    // ✅ Fetch user's name from the profile table
     const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("name")
@@ -45,7 +61,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         notFound();
     }
 
-    // ✅ Fetch recent workouts
     const { data: workouts, error } = await supabase
         .from("workouts")
         .select(`
@@ -65,13 +80,20 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
       )
     `)
         .eq("user_id", user.id)
-        .order("date", { ascending: false })
-        .limit(5);
+        .order("date", { ascending: false });
 
     if (error) {
         console.error("Error fetching workouts:", error.message);
         notFound();
     }
+
+    // 🧠 Group workouts by week
+    const groupedByWeek: Record<string, typeof workouts> = {};
+    workouts?.forEach((workout) => {
+        const weekLabel = getWeekLabel(workout.date);
+        if (!groupedByWeek[weekLabel]) groupedByWeek[weekLabel] = [];
+        groupedByWeek[weekLabel].push(workout);
+    });
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
@@ -80,46 +102,56 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
             </h1>
 
             <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Recent Workouts</h2>
-                <Link
-                    href="/workouts/new"
-                    className="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                >
-                    + Log New Workout
-                </Link>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold">Your Workouts</h2>
+                    <Link
+                        href="/workouts/new"
+                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                    >
+                        + Log New Workout
+                    </Link>
+                </div>
 
-                {workouts && workouts.length > 0 ? (
-                    <ul className="space-y-4">
-                        {workouts.map((workout) => (
-                            <li key={workout.id} className="border p-4 rounded shadow-sm">
-                                <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
-                                    <span>{new Date(workout.date).toLocaleDateString()}</span>
-                                    <DeleteWorkoutButton workoutId={workout.id} />
-                                </div>
+                {Object.entries(groupedByWeek).map(([week, workouts]) => (
+                    <details key={week} open className="border rounded p-4 bg-muted/20">
+                        <summary className="font-semibold cursor-pointer text-lg mb-2">
+                            {week}
+                        </summary>
 
-                                {workout.workout_exercises.map((we: any) => (
-                                    <div key={we.id} className="mb-3">
-                                        <p className="font-medium flex items-center gap-1">
-                                            <span>{getCategoryIcon(we.exercise.category)}</span>
-                                            {we.exercise.name}
-                                            <span className="text-gray-500 text-sm">
-                                                ({we.exercise.category})
-                                            </span>
-                                        </p>
-
-                                        <ul className="ml-4 mt-1 text-sm text-gray-300 list-disc">
-                                            {we.sets.map((set: any, index: number) => (
-                                                <li key={index}>
-                                                    {set.reps} reps @ {set.weight} lbs
-                                                </li>
-                                            ))}
-                                        </ul>
+                        <ul className="space-y-4 mt-2">
+                            {workouts.map((workout) => (
+                                <li key={workout.id} className="border p-4 rounded bg-background shadow-sm">
+                                    <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
+                                        <span>{new Date(workout.date).toLocaleDateString()}</span>
+                                        <DeleteWorkoutButton workoutId={workout.id} />
                                     </div>
-                                ))}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
+
+                                    {workout.workout_exercises.map((we: any) => (
+                                        <div key={we.id} className="mb-3">
+                                            <p className="font-medium flex items-center gap-1">
+                                                <span>{getCategoryIcon(we.exercise.category)}</span>
+                                                {we.exercise.name}
+                                                <span className="text-gray-500 text-sm">
+                                                    ({we.exercise.category})
+                                                </span>
+                                            </p>
+
+                                            <ul className="ml-4 mt-1 text-sm text-gray-300 list-disc">
+                                                {we.sets.map((set: any, index: number) => (
+                                                    <li key={index}>
+                                                        {set.reps} reps @ {set.weight} lbs
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ))}
+                                </li>
+                            ))}
+                        </ul>
+                    </details>
+                ))}
+
+                {(!workouts || workouts.length === 0) && (
                     <p className="text-gray-600">No workouts logged yet.</p>
                 )}
             </div>
