@@ -19,7 +19,7 @@ export function DeleteWorkoutButton({ workoutId }: { workoutId: string }) {
         >
             <button
                 type="submit"
-                className="text-red-500 hover:underline text-xs disabled:opacity-50"
+                className="btn btn-xs btn-error text-white hover:brightness-110 transition disabled:opacity-50"
                 disabled={isPending}
             >
                 {isPending ? "Deleting..." : "Delete"}
