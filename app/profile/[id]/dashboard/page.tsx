@@ -126,7 +126,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                         <details
                             key={week}
                             open={isCurrentWeek}
-                            className={`border rounded p-4 transition ${isCurrentWeek ? "border-blue-500 bg-blue-50" : "bg-muted/20"
+                            className={`border rounded p-4 transition ${isCurrentWeek
+                                    ? "border-blue-500 bg-blue-900/30 text-gray-900 dark:text-white"
+                                    : "bg-muted/20"
                                 }`}
                         >
                             <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
