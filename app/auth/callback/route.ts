@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
 
-    // Exchange the auth code for a session
+    // Exchange auth code for session
     await supabase.auth.exchangeCodeForSession(code);
 
     // Get authenticated user
@@ -30,11 +30,16 @@ export async function GET(request: Request) {
         console.error("Error checking existing profile:", profileFetchError.message);
       }
 
-      // If profile doesn't exist, create it
       if (!existingProfile) {
+        // ✅ Use name from user_metadata if available
+        const name =
+          (user.user_metadata?.name as string) ??
+          user.email?.split("@")[0] ??
+          "New User";
+
         const { error: insertError } = await supabase.from("profiles").insert({
           id: user.id,
-          name: user.email?.split("@")[0] ?? "New User",
+          name,
           avatar_url: "",
           created_at: new Date().toISOString(),
         });
@@ -44,7 +49,7 @@ export async function GET(request: Request) {
         }
       }
 
-      // Redirect to their profile page
+      // ✅ Redirect to user's profile page
       return NextResponse.redirect(`${origin}/profile/${user.id}`);
     }
   }

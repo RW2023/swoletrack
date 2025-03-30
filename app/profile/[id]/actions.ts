@@ -1,91 +1,132 @@
 "use server";
 
+import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-/**
- * Server Action that handles file upload, updates 'profiles', 
- * and then redirects back to the user's profile.
- */
-export async function updateAvatarAction(formData: FormData) {
-  const file = formData.get("avatar") as File | null;
-  if (!file) {
-    console.log("No file provided");
-    return;
-  }
-
+// ✅ Sign Up (updated with user_metadata)
+export const signUpAction = async (formData: FormData) => {
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
+  const name = formData.get("name")?.toString();
   const supabase = await createClient();
+  const origin = (await headers()).get("origin");
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    console.error("No authenticated user found:", userError);
-    return;
+  if (!email || !password || !name) {
+    return encodedRedirect("error", "/sign-up", "All fields are required");
   }
 
-  const ext = file.name.split(".").pop();
-  const fileName = `${user.id}-${Date.now()}.${ext}`;
-
-  const { data: uploadData, error: uploadError } = await supabase.storage
-    .from("avatars")
-    .upload(fileName, file, {
-      upsert: false,
-    });
-
-  if (uploadError) {
-    console.error("Error uploading file:", uploadError.message);
-    return;
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("avatars").getPublicUrl(uploadData.path);
-
-  if (!publicUrl) {
-    console.error("Could not retrieve public URL for uploaded image");
-    return;
-  }
-
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({ avatar_url: publicUrl })
-    .eq("id", user.id);
-
-  if (profileError) {
-    console.error("Error updating profile:", profileError.message);
-    return;
-  }
-
-  return redirect(`/profile/${user.id}`);
-}
-
-/**
- * Deletes a workout and its related data using ON DELETE CASCADE.
- */
-export async function deleteWorkoutAction(workoutId: string) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.error("User not authenticated");
-    return;
-  }
-
-  const { error } = await supabase
-    .from("workouts")
-    .delete()
-    .eq("id", workoutId);
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+      data: {
+        name, // ✅ store name in metadata
+      },
+    },
+  });
 
   if (error) {
-    console.error("Error deleting workout:", error.message);
-    return;
+    console.error("Sign-up error:", error.message);
+    return encodedRedirect("error", "/sign-up", error.message);
   }
 
-  return redirect(`/profile/${user.id}/dashboard`);
-}
+  return encodedRedirect(
+    "success",
+    "/sign-up",
+    "Thanks for signing up! Please check your email for a verification link."
+  );
+};
+
+// ✅ Sign In
+export const signInAction = async (formData: FormData) => {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-in", error.message);
+  }
+
+  if (data?.user) {
+    return redirect(`/profile/${data.user.id}`);
+  }
+
+  return redirect("/sign-in");
+};
+
+// ✅ Forgot Password
+export const forgotPasswordAction = async (formData: FormData) => {
+  const email = formData.get("email")?.toString();
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin");
+  const callbackUrl = formData.get("callbackUrl")?.toString();
+
+  if (!email) {
+    return encodedRedirect("error", "/forgot-password", "Email is required");
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?redirect_to=/protected/reset-password`,
+  });
+
+  if (error) {
+    console.error(error.message);
+    return encodedRedirect("error", "/forgot-password", "Could not reset password");
+  }
+
+  if (callbackUrl) {
+    return redirect(callbackUrl);
+  }
+
+  return encodedRedirect(
+    "success",
+    "/forgot-password",
+    "Check your email for a link to reset your password."
+  );
+};
+
+// ✅ Reset Password
+export const resetPasswordAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!password || !confirmPassword) {
+    return encodedRedirect(
+      "error",
+      "/protected/reset-password",
+      "Password and confirm password are required"
+    );
+  }
+
+  if (password !== confirmPassword) {
+    return encodedRedirect(
+      "error",
+      "/protected/reset-password",
+      "Passwords do not match"
+    );
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    return encodedRedirect("error", "/protected/reset-password", "Password update failed");
+  }
+
+  return encodedRedirect("success", "/protected/reset-password", "Password updated");
+};
+
+// ✅ Sign Out
+export const signOutAction = async () => {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return redirect("/sign-in");
+};
