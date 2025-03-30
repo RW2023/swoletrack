@@ -8,7 +8,6 @@ const config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -74,7 +73,13 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("daisyui"), // ✅ Add DaisyUI here
+  ],
+  daisyui: {
+    themes: ["light", "dark"], // ✅ Optional: customize or extend themes
+  },
 } satisfies Config;
 
 export default config;
