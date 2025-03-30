@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// ✅ Updated: Sign Up Action
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
@@ -25,10 +26,11 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (error) {
-    console.error(error.message);
+    console.error("Sign-up error:", error.message);
     return encodedRedirect("error", "/sign-up", error.message);
   }
 
+  // ✅ If user is immediately available (depends on Supabase settings)
   if (data?.user) {
     const { error: profileError } = await supabase
       .from("profiles")
@@ -40,9 +42,10 @@ export const signUpAction = async (formData: FormData) => {
       });
 
     if (profileError) {
-      // Log but don't interrupt signup flow
       console.error("Profile creation failed:", profileError.message);
     }
+  } else {
+    console.log("User must confirm their email before profile is created.");
   }
 
   return encodedRedirect(
@@ -52,6 +55,7 @@ export const signUpAction = async (formData: FormData) => {
   );
 };
 
+// ✅ Sign In
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -66,16 +70,15 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  // Redirect to the user's unique profile page
+  // ✅ Redirect to the user's profile on login
   if (data?.user) {
     return redirect(`/profile/${data.user.id}`);
   }
 
-  // Fallback if, for some reason, there's no user
   return redirect("/sign-in");
 };
 
-
+// ✅ Forgot Password
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const supabase = await createClient();
@@ -106,6 +109,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   );
 };
 
+// ✅ Reset Password
 export const resetPasswordAction = async (formData: FormData) => {
   const supabase = await createClient();
   const password = formData.get("password") as string;
@@ -130,6 +134,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   return encodedRedirect("success", "/protected/reset-password", "Password updated");
 };
 
+// ✅ Sign Out
 export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
