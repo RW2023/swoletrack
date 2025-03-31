@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { Sun, Moon, Laptop } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,66 +12,51 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Laptop, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+
+const ICON_SIZE = 16;
 
 const ThemeSwitcher = () => {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  // useEffect only runs on the client, so now we can safely show the UI
+  // Wait until mounted to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
-  const ICON_SIZE = 16;
+  const renderIcon = () => {
+    switch (theme) {
+      case "light":
+        return <Sun size={ICON_SIZE} className="text-muted-foreground" />;
+      case "dark":
+        return <Moon size={ICON_SIZE} className="text-muted-foreground" />;
+      default:
+        return <Laptop size={ICON_SIZE} className="text-muted-foreground" />;
+    }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size={"sm"}>
-          {theme === "light" ? (
-            <Sun
-              key="light"
-              size={ICON_SIZE}
-              className={"text-muted-foreground"}
-            />
-          ) : theme === "dark" ? (
-            <Moon
-              key="dark"
-              size={ICON_SIZE}
-              className={"text-muted-foreground"}
-            />
-          ) : (
-            <Laptop
-              key="system"
-              size={ICON_SIZE}
-              className={"text-muted-foreground"}
-            />
-          )}
+        <Button variant="ghost" size="sm" className="rounded-full">
+          {renderIcon()}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-content" align="start">
-        <DropdownMenuRadioGroup
-          value={theme}
-          onValueChange={(e) => setTheme(e)}
-        >
-          <DropdownMenuRadioItem className="flex gap-2" value="light">
-            <Sun size={ICON_SIZE} className="text-muted-foreground" />{" "}
-            <span>Light</span>
+      <DropdownMenuContent align="start" className="bg-popover text-popover-foreground border-border">
+        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioItem value="light" className="flex gap-2 items-center">
+            <Sun size={ICON_SIZE} className="text-muted-foreground" />
+            Light
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem className="flex gap-2" value="dark">
-            <Moon size={ICON_SIZE} className="text-muted-foreground" />{" "}
-            <span>Dark</span>
+          <DropdownMenuRadioItem value="dark" className="flex gap-2 items-center">
+            <Moon size={ICON_SIZE} className="text-muted-foreground" />
+            Dark
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem className="flex gap-2" value="system">
-            <Laptop size={ICON_SIZE} className="text-muted-foreground" />{" "}
-            <span>System</span>
+          <DropdownMenuRadioItem value="system" className="flex gap-2 items-center">
+            <Laptop size={ICON_SIZE} className="text-muted-foreground" />
+            System
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
