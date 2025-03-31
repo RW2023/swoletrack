@@ -1,4 +1,3 @@
-// app/protected/page.tsx
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -16,12 +15,16 @@ export default async function ProtectedPage() {
   return (
     <div className="flex-1 w-full flex flex-col gap-12 p-6 max-w-4xl mx-auto">
       {/* Welcome Banner */}
-      <div className="alert bg-accent text-foreground border border-border shadow-md">
-        <div>
-          <h1 className="font-bold text-lg">
-            👋 Welcome to SwoleTrac, <span className="text-primary">{user.email}</span>
+      <div className="alert bg-accent text-accent-foreground border border-border shadow-md">
+        <div className="space-y-1">
+          <h1 className="font-bold text-lg break-words">
+            👋 Welcome to SwoleTrac,
+            <span className="text-primary block sm:inline break-all">
+              {" "}
+              {user.email}
+            </span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground">
             You're successfully logged in and ready to go.
           </p>
         </div>
@@ -29,7 +32,7 @@ export default async function ProtectedPage() {
 
       {/* Quick Links */}
       <div className="space-y-4">
-        <h2 className="font-bold text-2xl text-foreground">Quick Links</h2>
+        <h2 className="font-bold text-2xl text-base-content">Quick Links</h2>
         <ul className="space-y-2">
           <li>
             <Link
@@ -60,7 +63,7 @@ export default async function ProtectedPage() {
 
       {/* Announcements */}
       <div className="mt-10">
-        <h2 className="font-bold text-xl text-foreground">📣 Announcements</h2>
+        <h2 className="font-bold text-xl text-base-content">📣 Announcements</h2>
         <p className="text-muted-foreground mt-2">
           Stay tuned — more features and tracking tools are coming soon!
         </p>
