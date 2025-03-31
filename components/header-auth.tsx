@@ -60,9 +60,13 @@ export default async function AuthButton() {
         )}
 
         <span className="font-semibold">Hi,</span> {displayName}!
-       
+
         <form action={signOutAction}>
-          <Button type="submit" variant={"outline"}>
+          <Button
+            type="submit"
+            variant="outline"
+            className="text-foreground border-border"
+          >
             Sign out
           </Button>
         </form>
