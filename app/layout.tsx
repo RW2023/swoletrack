@@ -63,15 +63,15 @@ export default function RootLayout({
           </main>
 
           {/* 3) Footer at the bottom, after main */}
-          <footer className="w-full border-t mx-auto text-center text-xs gap-8 py-16 flex items-center justify-center">
-            <p>
-              Swole{" "}
-              <span className="font-semibold">
-                Tracker
-              </span>
-            </p>
-            <ThemeSwitcher />
+          <footer className="w-full border-t border-border bg-background text-foreground py-10">
+            <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+              <p className="text-muted-foreground">
+                Swole <span className="font-semibold text-foreground">Tracker</span> &copy; {new Date().getFullYear()}
+              </p>
+              <ThemeSwitcher />
+            </div>
           </footer>
+
         </ThemeProvider>
       </body>
     </html>
