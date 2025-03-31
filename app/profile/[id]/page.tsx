@@ -40,33 +40,35 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 <h1 className="text-3xl font-bold">Profile</h1>
                 <Link
                     href={`/profile/${id}/dashboard`}
-                    className="btn btn-primary btn-sm self-start sm:self-auto"
+                    className="bg-primary text-primary-foreground px-4 py-2 rounded text-sm font-medium hover:opacity-90 transition"
                 >
                     Go to Dashboard
                 </Link>
             </div>
 
             {/* Profile Card */}
-            <div className="card bg-base-200 shadow-md">
-                <div className="card-body items-center text-center">
-                    <div className="avatar mb-4">
-                        <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                            {profile.avatar_url ? (
-                                <img src={profile.avatar_url} alt="Avatar" />
-                            ) : (
-                                <span className="text-sm">No Avatar</span>
-                            )}
-                        </div>
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+                <div className="p-6 flex flex-col items-center text-center gap-4">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border border-border ring ring-primary ring-offset-2 ring-offset-background">
+                        {profile.avatar_url ? (
+                            <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
+                                No Avatar
+                            </div>
+                        )}
                     </div>
-                    <h2 className="text-xl font-semibold">Name</h2>
-                    <p className="text-base-content">{profile.name}</p>
+                    <div>
+                        <h2 className="text-xl font-semibold">Name</h2>
+                        <p className="text-foreground">{profile.name}</p>
+                    </div>
                 </div>
             </div>
 
-            {/* Upload Form */}
-            <div className="card bg-base-200 shadow-md">
-                <div className="card-body">
-                    <h2 className="text-lg font-semibold mb-2">Update Avatar</h2>
+            {/* Avatar Upload */}
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+                <div className="p-6">
+                    <h2 className="text-lg font-semibold mb-4">Update Avatar</h2>
                     <AvatarUploadForm />
                 </div>
             </div>
