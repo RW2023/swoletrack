@@ -34,43 +34,39 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     }
 
     return (
-        <div className="p-6 max-w-3xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+            {/* Header with Button */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h1 className="text-3xl font-bold">Profile</h1>
                 <Link
                     href={`/profile/${id}/dashboard`}
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm self-start sm:self-auto"
                 >
                     Go to Dashboard
                 </Link>
             </div>
 
-            {/* Avatar Display */}
-            <div className="flex items-center gap-6 mb-6">
-                {profile.avatar_url ? (
-                    <img
-                        src={profile.avatar_url}
-                        alt="Avatar"
-                        className="w-24 h-24 object-cover rounded-full border border-border"
-                    />
-                ) : (
-                    <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center text-sm text-muted-foreground">
-                        No avatar
+            {/* Profile Card */}
+            <div className="card bg-base-200 shadow-md">
+                <div className="card-body items-center text-center">
+                    <div className="avatar mb-4">
+                        <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            {profile.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Avatar" />
+                            ) : (
+                                <span className="text-sm">No Avatar</span>
+                            )}
+                        </div>
                     </div>
-                )}
-                <div>
-                    <p className="text-xl font-medium text-foreground">
-                        Name: {profile.name}
-                    </p>
+                    <h2 className="text-xl font-semibold">Name</h2>
+                    <p className="text-base-content">{profile.name}</p>
                 </div>
             </div>
 
-            {/* Avatar Upload Form */}
-            <div className="mb-8">
-                <h2 className="text-lg font-semibold mb-2 text-foreground">
-                    Update Avatar
-                </h2>
-                <div className="bg-muted p-4 rounded-lg">
+            {/* Upload Form */}
+            <div className="card bg-base-200 shadow-md">
+                <div className="card-body">
+                    <h2 className="text-lg font-semibold mb-2">Update Avatar</h2>
                     <AvatarUploadForm />
                 </div>
             </div>
