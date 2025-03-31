@@ -7,10 +7,6 @@ export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
 
-/**
- * Next 15 expects `params` to be a Promise if
- * the page is async. So define your type accordingly:
- */
 type ProfilePageProps = {
     params: Promise<{ id: string }>;
 };
@@ -38,36 +34,46 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     }
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Profile</h1>
+        <div className="p-6 max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+                <Link
+                    href={`/profile/${id}/dashboard`}
+                    className="btn btn-primary btn-sm"
+                >
+                    Go to Dashboard
+                </Link>
+            </div>
 
-            {/* Avatar section */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Avatar</label>
+            {/* Avatar Display */}
+            <div className="flex items-center gap-6 mb-6">
                 {profile.avatar_url ? (
                     <img
                         src={profile.avatar_url}
                         alt="Avatar"
-                        className="w-32 h-32 object-cover rounded-full border"
+                        className="w-24 h-24 object-cover rounded-full border border-border"
                     />
                 ) : (
-                    <div className="w-32 h-32 bg-gray-200 rounded-full" />
+                    <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center text-sm text-muted-foreground">
+                        No avatar
+                    </div>
                 )}
+                <div>
+                    <p className="text-xl font-medium text-foreground">
+                        Name: {profile.name}
+                    </p>
+                </div>
             </div>
 
-            {/* Name */}
-            <p className="text-lg font-medium mb-6">Name: {profile.name}</p>
-
-            {/* Dashboard link */}
-            <Link
-                href={`/profile/${id}/dashboard`}
-                className="text-blue-500 hover:underline mb-6 block"
-            >
-                Go to Dashboard
-            </Link>
-
-            {/* Avatar upload form */}
-            <AvatarUploadForm />
+            {/* Avatar Upload Form */}
+            <div className="mb-8">
+                <h2 className="text-lg font-semibold mb-2 text-foreground">
+                    Update Avatar
+                </h2>
+                <div className="bg-muted p-4 rounded-lg">
+                    <AvatarUploadForm />
+                </div>
+            </div>
         </div>
     );
 }
