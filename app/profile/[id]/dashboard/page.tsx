@@ -10,7 +10,7 @@ export const revalidate = 0;
 function getWeekLabel(dateStr: string) {
     const date = new Date(dateStr);
     const start = new Date(date);
-    start.setDate(date.getDate() - date.getDay() + 1); // Monday
+    start.setDate(date.getDate() - date.getDay() + 1);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
     return `Week of ${start.toLocaleDateString("en-US", {
@@ -88,16 +88,12 @@ export default async function DashboardPage({
     const currentWeek = getWeekLabel(new Date().toISOString());
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6 text-foreground">
-                {profile.name}'s Dashboard
-            </h1>
+        <div className="p-6 max-w-4xl mx-auto text-base-content">
+            <h1 className="text-2xl font-bold mb-6">{profile.name}'s Dashboard</h1>
 
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold text-foreground">
-                        Your Workouts
-                    </h2>
+                    <h2 className="text-xl font-semibold">Your Workouts</h2>
                     <Link href="/workouts/new" className="btn btn-success text-white">
                         + Log New Workout
                     </Link>
@@ -107,8 +103,8 @@ export default async function DashboardPage({
                     const isCurrentWeek = week === currentWeek;
                     const allSets = workouts
                         ? workouts.flatMap((w) =>
-                              w.workout_exercises.flatMap((e: any) => e.sets)
-                          )
+                            w.workout_exercises.flatMap((e: any) => e.sets)
+                        )
                         : [];
                     const totalSets = allSets.length;
                     const totalVolume = allSets.reduce(
@@ -120,15 +116,16 @@ export default async function DashboardPage({
                         <details
                             key={week}
                             open={isCurrentWeek}
-                            className={`border rounded p-4 ${isCurrentWeek
+                            className={`border rounded p-4 mt-4 ${isCurrentWeek
                                     ? "border-primary bg-primary/10"
-                                    : "bg-muted dark:bg-muted/30"
+                                    : "bg-base-200"
                                 }`}
                         >
-                            <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between text-foreground">
+                            <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
                                 <span>{week}</span>
                                 <span className="text-sm text-muted-foreground font-normal ml-4">
-                                    {workouts?.length || 0} workout(s), {totalSets} sets, {totalVolume} lbs total
+                                    {workouts?.length || 0} workout(s), {totalSets} sets,{" "}
+                                    {totalVolume} lbs total
                                 </span>
                             </summary>
 
@@ -136,10 +133,12 @@ export default async function DashboardPage({
                                 {workouts?.map((workout) => (
                                     <li
                                         key={workout.id}
-                                        className="border p-4 rounded bg-card text-card-foreground shadow-sm"
+                                        className="border p-4 rounded bg-base-100 shadow-sm"
                                     >
                                         <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
-                                            <span>{new Date(workout.date).toLocaleDateString()}</span>
+                                            <span>
+                                                {new Date(workout.date).toLocaleDateString()}
+                                            </span>
                                             <DeleteWorkoutButton workoutId={workout.id} />
                                         </div>
 
@@ -151,11 +150,11 @@ export default async function DashboardPage({
 
                                         {workout.workout_exercises.map((we: any) => (
                                             <div key={we.id} className="mb-3">
-                                                <p className="font-medium flex items-center gap-1 text-foreground">
+                                                <p className="font-medium flex items-center gap-1">
                                                     <span>{getCategoryIcon(we.exercise.category)}</span>
                                                     {we.exercise.name}
                                                     <span className="text-sm text-muted-foreground">
-                                                        ({we.exercise.category})
+                                                        ({we.exercise.category.replace("_", " ")})
                                                     </span>
                                                 </p>
                                                 <ul className="ml-4 mt-1 text-sm text-muted-foreground list-disc">
