@@ -14,37 +14,55 @@ export default async function ProtectedPage() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-12 p-6">
-      <div className="bg-accent text-sm p-4 rounded-md text-foreground">
-        <p className="font-semibold">Welcome to SwoleTrac, {user.email} 👋</p>
-        <p className="mt-1">You're successfully logged in and ready to go.</p>
+    <div className="flex-1 w-full flex flex-col gap-12 p-6 max-w-4xl mx-auto">
+      {/* Welcome Banner */}
+      <div className="alert bg-accent text-foreground border border-border shadow-md">
+        <div>
+          <h1 className="font-bold text-lg">
+            👋 Welcome to SwoleTrac, <span className="text-primary">{user.email}</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            You're successfully logged in and ready to go.
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <h2 className="font-bold text-2xl">Quick Links</h2>
-        <ul className="space-y-2 text-blue-600 font-medium">
+      {/* Quick Links */}
+      <div className="space-y-4">
+        <h2 className="font-bold text-2xl text-foreground">Quick Links</h2>
+        <ul className="space-y-2">
           <li>
-            <Link href={`/profile/${user.id}/dashboard`} className="hover:underline">
+            <Link
+              href={`/profile/${user.id}/dashboard`}
+              className="btn btn-outline btn-primary w-full text-left"
+            >
               📊 View Your Dashboard
             </Link>
           </li>
           <li>
-            <Link href="/workouts/new" className="hover:underline">
+            <Link
+              href="/workouts/new"
+              className="btn btn-outline btn-success w-full text-left"
+            >
               ➕ Log a Workout
             </Link>
           </li>
           <li>
-            <Link href={`/profile/${user.id}`} className="hover:underline">
+            <Link
+              href={`/profile/${user.id}`}
+              className="btn btn-outline btn-secondary w-full text-left"
+            >
               ⚙️ Edit Your Profile
             </Link>
           </li>
         </ul>
       </div>
 
-      <div>
-        <h2 className="font-bold text-xl mt-8">Announcements</h2>
+      {/* Announcements */}
+      <div className="mt-10">
+        <h2 className="font-bold text-xl text-foreground">📣 Announcements</h2>
         <p className="text-muted-foreground mt-2">
-          Stay tuned — more features and tracking tools are coming soon.
+          Stay tuned — more features and tracking tools are coming soon!
         </p>
       </div>
     </div>
