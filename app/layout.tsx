@@ -31,47 +31,39 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      {/* 
-        1) "flex flex-col min-h-screen" makes the whole viewport
-           a vertical flex container.
-      */}
-      <body className="bg-background text-foreground flex flex-col min-h-screen">
+      <body className="min-h-screen bg-base-100 text-base-content flex flex-col">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {/* 2) Main is now a flex column that can grow to fill leftover space */}
-          <main className="flex flex-col flex-grow w-full">
-            {/* Nav at the top */}
-            <nav className="w-full border-b border-b-foreground/10 h-16 flex justify-center">
-              <div className="max-w-5xl w-full flex justify-between items-center px-5 py-3 text-sm">
-                <div className="flex gap-5 items-center font-semibold">
-                  {/* If you had a brand/logo link, put it here */}
-                </div>
-                {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
-              </div>
-            </nav>
-
-            {/* Page content in the middle, uses flex-grow to push footer down */}
-            <div className="flex-grow w-full flex flex-col gap-20 items-center">
-              <div className="flex flex-col gap-20 max-w-5xl w-full p-5">
-                {children}
-              </div>
+          {/* Navbar */}
+          <nav className="navbar border-b border-base-300 px-4 sm:px-6">
+            <div className="flex-1">
+              <Link href="/" className="text-lg font-bold tracking-tight">
+                SwoleTrac
+              </Link>
             </div>
+            <div className="flex-none">
+              {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+            </div>
+          </nav>
+
+          {/* Main content */}
+          <main className="flex-grow w-full max-w-5xl mx-auto px-4 py-8">
+            {children}
           </main>
 
-          {/* 3) Footer at the bottom, after main */}
-          <footer className="w-full border-t border-border bg-background text-foreground py-10">
-            <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
-              <p className="text-muted-foreground">
-                Swole <span className="font-semibold text-foreground">Tracker</span> &copy; {new Date().getFullYear()}
+          {/* Footer */}
+          <footer className="footer p-4 border-t border-base-300 bg-base-100 text-sm text-base-content">
+            <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p>
+                Swole <span className="font-bold">Tracker</span> &copy; {new Date().getFullYear()}
               </p>
               <ThemeSwitcher />
             </div>
           </footer>
-
         </ThemeProvider>
       </body>
     </html>
