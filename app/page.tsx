@@ -1,8 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20 bg-base-100 text-base-content">
+      <div className="relative w-40 h-40 sm:w-56 sm:h-56 mb-8">
+        <Image
+          src="/logo.png"
+          alt="SwoleTrac Logo"
+          fill
+          priority
+          className="object-contain"
+        />
+      </div>
+
       <h1 className="text-4xl sm:text-5xl font-bold mb-4">
         Welcome to <span className="text-primary">SwoleTrac 💪</span>
       </h1>
@@ -13,16 +24,10 @@ export default function Home() {
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          href="/sign-up"
-          className="btn btn-primary text-lg"
-        >
+        <Link href="/sign-up" className="btn btn-primary text-lg">
           Get Started
         </Link>
-        <Link
-          href="/workouts/new"
-          className="btn btn-outline text-lg"
-        >
+        <Link href="/workouts/new" className="btn btn-outline text-lg">
           Log a Workout
         </Link>
       </div>

@@ -6,6 +6,7 @@ import { EnvVarWarning } from "@/components/env-var-warning";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import Link from "next/link";
+import Image from "next/image";
 import clsx from "clsx";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -52,8 +53,15 @@ export default function RootLayout({
           {/* Navbar */}
           <nav className="navbar border-b border-base-300 px-4 sm:px-6 bg-base-100 text-base-content">
             <div className="flex-1">
-              <Link href="/" className="text-lg font-bold tracking-tight">
-                SwoleTrac
+              <Link href="/" className="flex items-center gap-2">
+                <Image
+                  src="/logo.png"
+                  alt="SwoleTrac Logo"
+                  width={32}
+                  height={32}
+                  className="rounded-sm"
+                />
+                <span className="text-lg font-bold tracking-tight">SwoleTrac</span>
               </Link>
             </div>
             <div className="flex-none">
