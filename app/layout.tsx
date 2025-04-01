@@ -1,6 +1,5 @@
-// app/layout.tsx
 import "./globals.css";
-import { Geist } from "next/font/google";
+import { Poppins, Karla } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import HeaderAuth from "@/components/header-auth";
 import { EnvVarWarning } from "@/components/env-var-warning";
@@ -19,9 +18,17 @@ export const metadata = {
   description: "A workout tracker for getting your swole on.",
 };
 
-const geistSans = Geist({
-  display: "swap",
+// ✅ Fonts
+const poppins = Poppins({
+  weight: ["400", "600", "700"],
   subsets: ["latin"],
+  variable: "--font-title",
+});
+
+const karla = Karla({
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  variable: "--font-body",
 });
 
 export default function RootLayout({
@@ -33,12 +40,11 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={clsx(geistSans.className)}
+      className={clsx(poppins.variable, karla.variable)}
     >
       <body className="min-h-screen flex flex-col">
-        {/* ✅ ThemeProvider goes inside <body> */}
         <ThemeProvider
-          attribute="class" // Applies class="light" or "dark" on html
+          attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
