@@ -17,13 +17,17 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", "All fields are required");
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+ const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${origin}/auth/callback`,
+    data: {
+      name, // ✅ this is needed for the trigger
     },
-  });
+  },
+});
+
 
   if (error) {
     console.error("Sign-up error:", error.message);
