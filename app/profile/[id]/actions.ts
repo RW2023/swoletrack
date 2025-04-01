@@ -43,6 +43,30 @@ export async function updateAvatarAction(formData: FormData) {
   revalidatePath(`/profile/${user.id}`);
 }
 
+// ✅ Update name
+export async function updateNameAction(formData: FormData) {
+  const name = formData.get("name")?.toString();
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || !name) return;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ name })
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Error updating name:", error.message);
+    throw new Error(error.message);
+  }
+
+  revalidatePath(`/profile/${user.id}`);
+}
+
 // ✅ Delete workout
 export async function deleteWorkoutAction(workoutId: string) {
   const supabase = await createClient();
