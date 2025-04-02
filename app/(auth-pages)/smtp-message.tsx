@@ -11,13 +11,6 @@ export function SmtpMessage() {
           increase the rate limit.
         </small> */}
         <div>
-          <Link
-            href="https://supabase.com/docs/guides/auth/auth-smtp"
-            target="_blank"
-            className="text-primary/50 hover:text-primary flex items-center text-sm gap-1"
-          >
-            Learn more <ArrowUpRight size={14} />
-          </Link>
         </div>
       </div>
     </div>
