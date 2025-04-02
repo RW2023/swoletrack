@@ -53,16 +53,10 @@ export default function RootLayout({
           {/* Navbar */}
           <nav className="navbar border-b border-base-300 px-4 sm:px-6 bg-base-100 text-base-content">
             <div className="flex-1">
-              <Link href="/" className="flex items-center gap-2">
-                <Image
-                  src="/logo.png"
-                  alt="SwoleTrac Logo"
-                  width={32}
-                  height={32}
-                  className="rounded-sm"
-                />
-                <span className="text-lg font-bold tracking-tight">SwoleTrac</span>
+              <Link href="/" className="text-lg font-bold tracking-tight">
+                SwoleTrac
               </Link>
+
             </div>
             <div className="flex-none">
               {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
