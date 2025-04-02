@@ -15,7 +15,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Swole Tracker",
+  title: "SwoleTrac",
   description: "A workout tracker for getting your swole on.",
 };
 
@@ -72,7 +72,7 @@ export default function RootLayout({
           <footer className="footer p-4 border-t border-base-300 bg-base-100 text-sm text-base-content">
             <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <p>
-                Swole <span className="font-bold">Tracker</span> &copy;{" "}
+                Swole <span className="font-bold">Trac</span> &copy;{" "}
                 {new Date().getFullYear()}
               </p>
               <ThemeSwitcher />
