@@ -15,8 +15,9 @@ export async function updateAvatarAction(formData: FormData) {
   if (!user || !file) return;
 
   const fileExt = file.name.split(".").pop();
-  const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+  const filePath = `${user.id}/avatar.${fileExt}`;
 
+  // Overwrite previous avatar if exists
   const { error: uploadError } = await supabase.storage
     .from("avatars")
     .upload(filePath, file, { upsert: true });
@@ -43,7 +44,7 @@ export async function updateAvatarAction(formData: FormData) {
   revalidatePath(`/profile/${user.id}`);
 }
 
-// ✅ Update name
+// ✅ Update name — properly exported now
 export async function updateNameAction(formData: FormData) {
   const name = formData.get("name")?.toString();
   const supabase = await createClient();
