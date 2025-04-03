@@ -1,3 +1,4 @@
+// imports remain unchanged
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -36,7 +37,11 @@ function getCategoryIcon(category: string) {
     }
 }
 
-export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DashboardPage({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
     const { id } = await params;
     const supabase = await createClient();
     const {
@@ -87,18 +92,17 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     const totalSets = allSets.length;
     const totalVolume = allSets.reduce((sum, set: any) => sum + set.reps * set.weight, 0);
 
-    // Most frequent exercises
-    const frequencyMap = new Map<string, number>();
-    workouts?.forEach((w) => {
-        w.workout_exercises.forEach((e: any) => {
-            const name = e.exercise.name;
-            frequencyMap.set(name, (frequencyMap.get(name) || 0) + 1);
+    const exerciseFrequency = new Map<string, number>();
+    workouts?.forEach((workout) => {
+        workout.workout_exercises.forEach((we: any) => {
+            const name = we.exercise.name;
+            exerciseFrequency.set(name, (exerciseFrequency.get(name) || 0) + 1);
         });
     });
 
-    const topExercises = Array.from(frequencyMap.entries())
+    const mostFrequentExercises = Array.from(exerciseFrequency.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 3);
+        .slice(0, 5); // Top 5 most frequent
 
     const currentWeek = getWeekLabel(new Date().toISOString());
 
@@ -123,22 +127,24 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
             </div>
 
             {/* ✅ Most Frequent Exercises */}
-            {topExercises.length > 0 && (
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold mb-2">🏆 Most Frequent Exercises</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {topExercises.map(([name, count]) => (
-                            <div
+            <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-2">🔥 Most Frequent Exercises</h2>
+                {mostFrequentExercises.length > 0 ? (
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                        {mostFrequentExercises.map(([name, count]) => (
+                            <li
                                 key={name}
-                                className="rounded bg-base-200 p-4 text-center shadow-sm"
+                                className="bg-base-200 rounded p-3 flex justify-between items-center"
                             >
-                                <p className="text-sm text-muted-foreground">{name}</p>
-                                <p className="text-xl font-bold">{count} times</p>
-                            </div>
+                                <span>{name}</span>
+                                <span className="text-muted-foreground">{count}x</span>
+                            </li>
                         ))}
-                    </div>
-                </div>
-            )}
+                    </ul>
+                ) : (
+                    <p className="text-muted-foreground">No exercises logged yet.</p>
+                )}
+            </div>
 
             {/* ✅ Log New Workout */}
             <div className="flex justify-between items-center mb-4">
@@ -148,7 +154,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </Link>
             </div>
 
-            {/* ✅ Workout Logs */}
+            {/* ✅ Weekly Workout Breakdown */}
             {Object.entries(groupedByWeek).map(([week, workouts]) => {
                 const isCurrentWeek = week === currentWeek;
                 const allSets = workouts?.flatMap((w) =>
@@ -164,9 +170,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     <details
                         key={week}
                         open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 ${isCurrentWeek
-                            ? "border-primary bg-primary/10"
-                            : "bg-base-200"
+                        className={`border rounded p-4 mt-4 ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"
                             }`}
                     >
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
