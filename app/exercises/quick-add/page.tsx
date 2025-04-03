@@ -24,8 +24,8 @@ export default function QuickAddExercisePage() {
             return;
         }
 
-        // ✅ Redirect to user-specific dashboard
-        router.push(`/dashboard/${data.userId}`);
+        // ✅ Go back to previous page (e.g., Dashboard)
+        router.back();
     };
 
     return (
