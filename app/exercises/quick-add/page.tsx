@@ -1,41 +1,39 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function QuickAddExercisePage() {
-    const [name, setName] = useState("");
-    const [category, setCategory] = useState("weight_training");
-    const [loading, setLoading] = useState(false);
+    const [name, setName] = useState('');
+    const [category, setCategory] = useState('weight_training');
+    const [error, setError] = useState('');
     const router = useRouter();
-    const supabase = createClient();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
 
-        const { error } = await supabase.from("exercises").insert([{ name, category }]);
+        const res = await fetch('/api/quick-add-exercise', {
+            method: 'POST',
+            body: JSON.stringify({ name, category }),
+        });
 
-        setLoading(false);
+        const data = await res.json();
 
-        if (error) {
-            console.error("Failed to add exercise:", error.message);
+        if (!res.ok) {
+            setError(data.error || 'Failed to add exercise.');
             return;
         }
 
-        // Redirect or show success
-        router.push("/profile/[id]/dashboard"); // ✅ Adjust this if needed
+        // ✅ Redirect to user-specific dashboard
+        router.push(`/dashboard/${data.userId}`);
     };
 
     return (
-        <div className="p-6 max-w-md mx-auto">
+        <div className="p-6 max-w-xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">Quick Add Exercise</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="label">
-                        <span className="label-text">Exercise Name</span>
-                    </label>
+                    <label className="block font-medium mb-1">Name</label>
                     <input
                         type="text"
                         className="input input-bordered w-full"
@@ -45,11 +43,8 @@ export default function QuickAddExercisePage() {
                         required
                     />
                 </div>
-
                 <div>
-                    <label htmlFor="category" className="label">
-                        <span className="label-text">Category</span>
-                    </label>
+                    <label htmlFor="category" className="block font-medium mb-1">Category</label>
                     <select
                         id="category"
                         className="select select-bordered w-full"
@@ -62,8 +57,10 @@ export default function QuickAddExercisePage() {
                     </select>
                 </div>
 
-                <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-                    {loading ? "Adding..." : "Add Exercise"}
+                {error && <p className="text-error">{error}</p>}
+
+                <button type="submit" className="btn btn-primary w-full">
+                    Add Exercise
                 </button>
             </form>
         </div>
