@@ -54,7 +54,7 @@ export default function RootLayout({
           <nav className="navbar border-b border-base-300 px-4 sm:px-6 bg-base-100 text-base-content">
             <div className="flex-1">
               <Link href="/" className="text-lg font-bold tracking-tight">
-                SwoleTrac
+                ST
               </Link>
 
             </div>
