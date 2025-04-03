@@ -135,18 +135,23 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     }
 
     let currentStreak = 0;
-    let today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const utcToday = new Date();
+    utcToday.setUTCHours(0, 0, 0, 0); // Normalize to UTC midnight
+
     for (let i = workoutDates.length - 1; i >= 0; i--) {
         const date = new Date(workoutDates[i]);
-        const diff = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        date.setUTCHours(0, 0, 0, 0); // Also normalize the workout date to UTC
+
+        const diff = Math.floor((utcToday.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
         if (diff === 0 || diff === currentStreak + 1) {
             currentStreak++;
-            today.setDate(today.getDate() - 1);
+            utcToday.setUTCDate(utcToday.getUTCDate() - 1); // Go back one UTC day
         } else {
             break;
         }
     }
+
 
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
