@@ -66,12 +66,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     category
                 ),
                 sets (
-    set_number,
-    reps,
-    weight,
-    duration
-)
-
+                    set_number,
+                    reps,
+                    weight,
+                    duration
+                )
             )
         `)
         .eq("user_id", user.id)
@@ -87,9 +86,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     const allSets = workouts?.flatMap((w) =>
         w.workout_exercises.flatMap((e: any) => e.sets)
     ) || [];
+
     const totalWorkouts = workouts?.length || 0;
     const totalSets = allSets.length;
-    const totalVolume = allSets.reduce((sum, set: any) => sum + set.reps * set.weight, 0);
+    const totalVolume = allSets.reduce(
+        (sum, set: any) => sum + (set.reps ?? 0) * (set.weight ?? 0),
+        0
+    );
 
     // Personal Records
     const personalRecordsMap = new Map<string, number>();
@@ -110,22 +113,28 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    // Streaks
+    // Streaks – normalize all workout dates to UTC midnight
     const workoutDates = Array.from(
         new Set(
-            (workouts ?? [])
-                .map((w) => new Date(w.date).toDateString())
-                .sort()
+            (workouts ?? []).map((w) => {
+                const d = new Date(w.date);
+                d.setUTCHours(0, 0, 0, 0);
+                return d.toISOString();
+            })
         )
-    );
+    ).sort();
 
+    // Longest Streak
     let longestStreak = 0;
     let rollingStreak = 0;
     let prevDate: Date | null = null;
 
-    for (const dateStr of workoutDates) {
-        const currentDate = new Date(dateStr);
-        if (prevDate && currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24) {
+    for (const iso of workoutDates) {
+        const currentDate = new Date(iso);
+        if (
+            prevDate &&
+            currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24
+        ) {
             rollingStreak++;
         } else {
             rollingStreak = 1;
@@ -134,24 +143,23 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         prevDate = currentDate;
     }
 
+    // Current Streak
     let currentStreak = 0;
     const utcToday = new Date();
-    utcToday.setUTCHours(0, 0, 0, 0); // Normalize to UTC midnight
+    utcToday.setUTCHours(0, 0, 0, 0);
 
     for (let i = workoutDates.length - 1; i >= 0; i--) {
         const date = new Date(workoutDates[i]);
-        date.setUTCHours(0, 0, 0, 0); // Also normalize the workout date to UTC
+        date.setUTCHours(0, 0, 0, 0);
 
         const diff = Math.floor((utcToday.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
         if (diff === 0 || diff === currentStreak + 1) {
             currentStreak++;
-            utcToday.setUTCDate(utcToday.getUTCDate() - 1); // Go back one UTC day
+            utcToday.setUTCDate(utcToday.getUTCDate() - 1);
         } else {
             break;
         }
     }
-
 
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
@@ -171,6 +179,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         <div className="p-6 max-w-5xl mx-auto text-base-content">
             <h1 className="text-2xl font-bold mb-6">{profile.name}'s Dashboard</h1>
 
+            {/* Summary Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="rounded bg-base-200 p-4 text-center shadow-sm">
                     <p className="text-sm text-muted-foreground">Total Workouts</p>
@@ -186,6 +195,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
+            {/* PRs & Streaks */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div className="bg-base-200 p-4 rounded shadow-sm">
                     <h2 className="text-lg font-semibold mb-2">🏆 Personal Records</h2>
@@ -216,6 +226,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
+            {/* Most Frequent Exercises */}
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-2">💪 Most Frequent Exercises</h2>
                 {mostFrequentExercises.length > 0 ? (
@@ -235,6 +246,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 )}
             </div>
 
+            {/* Workouts Section */}
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Your Workouts</h2>
                 <Link href="/workouts/new" className="btn btn-success text-white">
@@ -249,7 +261,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 ) || [];
                 const totalSets = allSets.length;
                 const totalVolume = allSets.reduce(
-                    (sum, set: any) => sum + set.reps * set.weight,
+                    (sum, set: any) => sum + (set.reps ?? 0) * (set.weight ?? 0),
                     0
                 );
 
@@ -257,8 +269,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     <details
                         key={week}
                         open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"
-                            }`}
+                        className={`border rounded p-4 mt-4 ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"}`}
                     >
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
                             <span>{week}</span>
@@ -302,7 +313,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                                                     </li>
                                                 ))}
                                             </ul>
-
                                         </div>
                                     ))}
                                 </li>
