@@ -66,10 +66,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     category
                 ),
                 sets (
-                    set_number,
-                    reps,
-                    weight
-                )
+    set_number,
+    reps,
+    weight,
+    duration
+)
+
             )
         `)
         .eq("user_id", user.id)
@@ -289,10 +291,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                                             <ul className="ml-4 mt-1 text-sm text-muted-foreground list-disc">
                                                 {we.sets.map((set: any, index: number) => (
                                                     <li key={index}>
-                                                        {set.reps} reps @ {set.weight} lbs
+                                                        {we.exercise.category === "cardio"
+                                                            ? `${set.duration} min${set.duration > 1 ? "s" : ""}`
+                                                            : `${set.reps} reps @ ${set.weight} lbs`}
                                                     </li>
                                                 ))}
                                             </ul>
+
                                         </div>
                                     ))}
                                 </li>

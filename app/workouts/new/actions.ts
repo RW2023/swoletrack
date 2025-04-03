@@ -17,7 +17,7 @@ export async function logWorkoutAction(formData: FormData) {
     return;
   }
 
-  // 2. Extract workout data
+  // 2. Extract form data
   const exerciseId = formData.get("exerciseId") as string;
   const setsJson = formData.get("sets") as string;
   const notes = formData.get("notes")?.toString() || null;
@@ -29,13 +29,27 @@ export async function logWorkoutAction(formData: FormData) {
 
   const sets = JSON.parse(setsJson);
 
-  // 3. Insert workout with notes
+  // 3. Fetch exercise to determine category
+  const { data: exercise, error: exerciseError } = await supabase
+    .from("exercises")
+    .select("category")
+    .eq("id", exerciseId)
+    .single();
+
+  if (exerciseError || !exercise) {
+    console.error("Error fetching exercise category:", exerciseError?.message);
+    return;
+  }
+
+  const isCardio = exercise.category === "cardio";
+
+  // 4. Create workout row
   const { data: workout, error: workoutError } = await supabase
     .from("workouts")
     .insert({
       user_id: user.id,
       date: new Date(),
-      notes, // ✅ insert notes
+      notes,
     })
     .select()
     .single();
@@ -45,7 +59,7 @@ export async function logWorkoutAction(formData: FormData) {
     return;
   }
 
-  // 4. Link to exercise
+  // 5. Link to exercise
   const { data: workoutExercise, error: linkError } = await supabase
     .from("workout_exercises")
     .insert({
@@ -61,12 +75,16 @@ export async function logWorkoutAction(formData: FormData) {
     return;
   }
 
-  // 5. Insert sets
+  // 6. Insert sets — cardio or regular
   const formattedSets = sets.map((set: any, i: number) => ({
     workout_exercise_id: workoutExercise.id,
     set_number: i + 1,
-    reps: Number(set.reps),
-    weight: Number(set.weight),
+    ...(isCardio
+      ? { duration: Number(set.duration) }
+      : {
+          reps: Number(set.reps),
+          weight: Number(set.weight),
+        }),
   }));
 
   const { error: setError } = await supabase.from("sets").insert(formattedSets);
@@ -76,6 +94,6 @@ export async function logWorkoutAction(formData: FormData) {
     return;
   }
 
-  // 6. Redirect to dashboard
+  // 7. Redirect to dashboard
   return redirect(`/profile/${user.id}/dashboard`);
 }

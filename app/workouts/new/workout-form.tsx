@@ -3,19 +3,25 @@
 import { useState } from "react";
 import { logWorkoutAction } from "./actions";
 
-export default function WorkoutForm({ exercises }: { exercises: any[] }) {
+type Exercise = {
+    id: string;
+    name: string;
+    category: string;
+};
+
+export default function WorkoutForm({ exercises }: { exercises: Exercise[] }) {
     const [exerciseId, setExerciseId] = useState<string>("");
-    const [sets, setSets] = useState<{ reps: string; weight: string }[]>([
+    const [category, setCategory] = useState<string>("");
+    const [sets, setSets] = useState<{ reps?: string; weight?: string; duration?: string }[]>([
         { reps: "", weight: "" },
     ]);
     const [notes, setNotes] = useState<string>("");
-
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     const updateSet = (
         index: number,
-        field: "reps" | "weight",
+        field: "reps" | "weight" | "duration",
         value: string
     ) => {
         const updated = [...sets];
@@ -24,7 +30,14 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
     };
 
     const addSet = () => {
-        setSets((prev) => [...prev, { reps: "", weight: "" }]);
+        setSets((prev) => [...prev, category === "cardio" ? { duration: "" } : { reps: "", weight: "" }]);
+    };
+
+    const handleExerciseChange = (id: string) => {
+        setExerciseId(id);
+        const selected = exercises.find((ex) => ex.id === id);
+        setCategory(selected?.category || "");
+        setSets([selected?.category === "cardio" ? { duration: "" } : { reps: "", weight: "" }]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -35,11 +48,11 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
             const formData = new FormData();
             formData.append("exerciseId", exerciseId);
             formData.append("sets", JSON.stringify(sets));
-            formData.append("notes", notes); // ✅ Include notes
+            formData.append("notes", notes);
 
             await logWorkoutAction(formData);
             setSubmitted(true);
-            setNotes(""); // Clear after submission
+            setNotes("");
         } catch (err) {
             console.error("Submission failed", err);
         } finally {
@@ -49,15 +62,12 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Exercise Picker */}
             <div>
-                <label htmlFor="exercise-select" className="font-medium block mb-1">
-                    Select Exercise
-                </label>
+                <label htmlFor="exercise-select" className="font-medium block mb-1">Select Exercise</label>
                 <select
                     id="exercise-select"
                     value={exerciseId}
-                    onChange={(e) => setExerciseId(e.target.value)}
+                    onChange={(e) => handleExerciseChange(e.target.value)}
                     className="block w-full p-2 border rounded"
                     required
                 >
@@ -70,27 +80,40 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
                 </select>
             </div>
 
-            {/* Sets */}
+            {/* Set Inputs */}
             <div className="space-y-2">
                 <label className="font-medium block">Sets</label>
                 {sets.map((set, index) => (
                     <div key={index} className="flex gap-4">
-                        <input
-                            type="number"
-                            placeholder="Reps"
-                            value={set.reps}
-                            onChange={(e) => updateSet(index, "reps", e.target.value)}
-                            className="w-24 p-2 border rounded"
-                            required
-                        />
-                        <input
-                            type="number"
-                            placeholder="Weight"
-                            value={set.weight}
-                            onChange={(e) => updateSet(index, "weight", e.target.value)}
-                            className="w-28 p-2 border rounded"
-                            required
-                        />
+                        {category === "cardio" ? (
+                            <input
+                                type="number"
+                                placeholder="Duration (min)"
+                                value={set.duration}
+                                onChange={(e) => updateSet(index, "duration", e.target.value)}
+                                className="w-40 p-2 border rounded"
+                                required
+                            />
+                        ) : (
+                            <>
+                                <input
+                                    type="number"
+                                    placeholder="Reps"
+                                    value={set.reps}
+                                    onChange={(e) => updateSet(index, "reps", e.target.value)}
+                                    className="w-24 p-2 border rounded"
+                                    required
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Weight"
+                                    value={set.weight}
+                                    onChange={(e) => updateSet(index, "weight", e.target.value)}
+                                    className="w-28 p-2 border rounded"
+                                    required
+                                />
+                            </>
+                        )}
                     </div>
                 ))}
                 <button
@@ -102,7 +125,7 @@ export default function WorkoutForm({ exercises }: { exercises: any[] }) {
                 </button>
             </div>
 
-            {/* ✅ Notes Field */}
+            {/* Notes */}
             <div>
                 <label className="block font-medium mb-1">Notes (optional)</label>
                 <textarea
