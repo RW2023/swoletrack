@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
 
-// Utility
 function getWeekLabel(dateStr: string) {
     const date = new Date(dateStr);
     const start = new Date(date);
@@ -88,6 +87,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     const totalSets = allSets.length;
     const totalVolume = allSets.reduce((sum, set: any) => sum + set.reps * set.weight, 0);
 
+    // Most frequent exercises
+    const frequencyMap = new Map<string, number>();
+    workouts?.forEach((w) => {
+        w.workout_exercises.forEach((e: any) => {
+            const name = e.exercise.name;
+            frequencyMap.set(name, (frequencyMap.get(name) || 0) + 1);
+        });
+    });
+
+    const topExercises = Array.from(frequencyMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
     const currentWeek = getWeekLabel(new Date().toISOString());
 
     return (
@@ -109,6 +121,24 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     <p className="text-2xl font-bold">{totalVolume.toLocaleString()}</p>
                 </div>
             </div>
+
+            {/* ✅ Most Frequent Exercises */}
+            {topExercises.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold mb-2">🏆 Most Frequent Exercises</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {topExercises.map(([name, count]) => (
+                            <div
+                                key={name}
+                                className="rounded bg-base-200 p-4 text-center shadow-sm"
+                            >
+                                <p className="text-sm text-muted-foreground">{name}</p>
+                                <p className="text-xl font-bold">{count} times</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* ✅ Log New Workout */}
             <div className="flex justify-between items-center mb-4">
@@ -134,7 +164,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     <details
                         key={week}
                         open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"
+                        className={`border rounded p-4 mt-4 ${isCurrentWeek
+                            ? "border-primary bg-primary/10"
+                            : "bg-base-200"
                             }`}
                     >
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
