@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeleteWorkoutButton } from "@/components/delete-workout-button";
+import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -88,7 +89,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     const totalSets = allSets.length;
     const totalVolume = allSets.reduce((sum, set: any) => sum + set.reps * set.weight, 0);
 
-    // ✅ Personal Records
+    // Personal Records
     const personalRecordsMap = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((exerciseBlock: any) => {
@@ -107,7 +108,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    // ✅ Workout Dates
+    // Streaks
     const workoutDates = Array.from(
         new Set(
             (workouts ?? [])
@@ -116,17 +117,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         )
     );
 
-    // ✅ Longest streak
     let longestStreak = 0;
     let rollingStreak = 0;
     let prevDate: Date | null = null;
 
     for (const dateStr of workoutDates) {
         const currentDate = new Date(dateStr);
-        if (
-            prevDate &&
-            currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24
-        ) {
+        if (prevDate && currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24) {
             rollingStreak++;
         } else {
             rollingStreak = 1;
@@ -135,15 +132,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         prevDate = currentDate;
     }
 
-    // ✅ Current streak
     let currentStreak = 0;
     let today = new Date();
     today.setHours(0, 0, 0, 0);
-
     for (let i = workoutDates.length - 1; i >= 0; i--) {
         const date = new Date(workoutDates[i]);
         const diff = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
         if (diff === 0 || diff === currentStreak + 1) {
             currentStreak++;
             today.setDate(today.getDate() - 1);
@@ -152,8 +146,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         }
     }
 
-
-    // ✅ Most Frequent Exercises
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((we: any) => {
@@ -172,7 +164,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         <div className="p-6 max-w-5xl mx-auto text-base-content">
             <h1 className="text-2xl font-bold mb-6">{profile.name}'s Dashboard</h1>
 
-            {/* ✅ Summary Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="rounded bg-base-200 p-4 text-center shadow-sm">
                     <p className="text-sm text-muted-foreground">Total Workouts</p>
@@ -188,7 +179,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
-            {/* ✅ PRs & Streaks */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div className="bg-base-200 p-4 rounded shadow-sm">
                     <h2 className="text-lg font-semibold mb-2">🏆 Personal Records</h2>
@@ -205,7 +195,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                         <p className="text-muted-foreground text-sm">No PRs yet.</p>
                     )}
                 </div>
-
                 <div className="bg-base-200 p-4 rounded shadow-sm">
                     <h2 className="text-lg font-semibold mb-2">🔥 Streaks</h2>
                     <p className="text-base font-medium">
@@ -220,7 +209,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
-            {/* ✅ Most Frequent Exercises */}
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-2">💪 Most Frequent Exercises</h2>
                 {mostFrequentExercises.length > 0 ? (
@@ -240,7 +228,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 )}
             </div>
 
-            {/* ✅ Workout Logging */}
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Your Workouts</h2>
                 <Link href="/workouts/new" className="btn btn-success text-white">
@@ -248,7 +235,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </Link>
             </div>
 
-            {/* ✅ Weekly Breakdown */}
             {Object.entries(groupedByWeek).map(([week, workouts]) => {
                 const isCurrentWeek = week === currentWeek;
                 const allSets = workouts?.flatMap((w) =>
@@ -319,6 +305,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
             {(!workouts || workouts.length === 0) && (
                 <p className="text-muted-foreground">No workouts logged yet.</p>
             )}
+
+            <QuickAddFAB />
         </div>
     );
 }
