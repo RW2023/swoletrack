@@ -1,10 +1,8 @@
-// imports remain unchanged
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeleteWorkoutButton } from "@/components/delete-workout-button";
 
-// Server-side rendering settings
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
@@ -37,11 +35,7 @@ function getCategoryIcon(category: string) {
     }
 }
 
-export default async function DashboardPage({
-    params,
-}: {
-    params: Promise<{ id: string }>;
-}) {
+export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const supabase = await createClient();
     const {
@@ -61,22 +55,22 @@ export default async function DashboardPage({
     const { data: workouts } = await supabase
         .from("workouts")
         .select(`
-      id,
-      date,
-      notes,
-      workout_exercises (
-        id,
-        exercise: exercises (
-          name,
-          category
-        ),
-        sets (
-          set_number,
-          reps,
-          weight
-        )
-      )
-    `)
+            id,
+            date,
+            notes,
+            workout_exercises (
+                id,
+                exercise: exercises (
+                    name,
+                    category
+                ),
+                sets (
+                    set_number,
+                    reps,
+                    weight
+                )
+            )
+        `)
         .eq("user_id", user.id)
         .order("date", { ascending: false });
 
@@ -87,10 +81,59 @@ export default async function DashboardPage({
         groupedByWeek[weekLabel].push(workout);
     });
 
-    const allSets = workouts?.flatMap((w) => w.workout_exercises.flatMap((e: any) => e.sets)) || [];
+    const allSets = workouts?.flatMap((w) =>
+        w.workout_exercises.flatMap((e: any) => e.sets)
+    ) || [];
     const totalWorkouts = workouts?.length || 0;
     const totalSets = allSets.length;
     const totalVolume = allSets.reduce((sum, set: any) => sum + set.reps * set.weight, 0);
+
+    // ✅ Personal Records (heaviest set per exercise)
+    const personalRecordsMap = new Map<string, number>();
+    workouts?.forEach((workout) => {
+        workout.workout_exercises.forEach((exerciseBlock: any) => {
+            const name = exerciseBlock.exercise.name;
+            exerciseBlock.sets.forEach((set: any) => {
+                const currentPR = personalRecordsMap.get(name) || 0;
+                const setWeight = set.weight;
+                if (setWeight > currentPR) {
+                    personalRecordsMap.set(name, setWeight);
+                }
+            });
+        });
+    });
+
+    const personalRecords = Array.from(personalRecordsMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    // ✅ Longest workout streak
+    const workoutDates = Array.from(
+        new Set(
+            (workouts ?? [])
+                .map((w) => new Date(w.date).toDateString())
+                .sort()
+        )
+    );
+
+
+    let longestStreak = 0;
+    let currentStreak = 0;
+    let prevDate: Date | null = null;
+
+    for (const dateStr of workoutDates) {
+        const currentDate = new Date(dateStr);
+        if (
+            prevDate &&
+            currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24
+        ) {
+            currentStreak++;
+        } else {
+            currentStreak = 1;
+        }
+        longestStreak = Math.max(longestStreak, currentStreak);
+        prevDate = currentDate;
+    }
 
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
@@ -102,7 +145,7 @@ export default async function DashboardPage({
 
     const mostFrequentExercises = Array.from(exerciseFrequency.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5); // Top 5 most frequent
+        .slice(0, 5);
 
     const currentWeek = getWeekLabel(new Date().toISOString());
 
@@ -126,11 +169,36 @@ export default async function DashboardPage({
                 </div>
             </div>
 
-            
+            {/* ✅ PRs and Streaks */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                <div className="bg-base-200 p-4 rounded shadow-sm">
+                    <h2 className="text-lg font-semibold mb-2">🏆 Personal Records</h2>
+                    {personalRecords.length > 0 ? (
+                        <ul className="space-y-1 text-sm">
+                            {personalRecords.map(([name, weight]) => (
+                                <li key={name} className="flex justify-between">
+                                    <span>{name}</span>
+                                    <span className="font-semibold">{weight} lbs</span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-muted-foreground text-sm">No PRs yet.</p>
+                    )}
+                </div>
+
+                <div className="bg-base-200 p-4 rounded shadow-sm">
+                    <h2 className="text-lg font-semibold mb-2">🔥 Longest Streak</h2>
+                    <p className="text-4xl font-bold">{longestStreak} days</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Longest streak of consecutive workout days.
+                    </p>
+                </div>
+            </div>
 
             {/* ✅ Most Frequent Exercises */}
             <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">🔥 Most Frequent Exercises</h2>
+                <h2 className="text-lg font-semibold mb-2">💪 Most Frequent Exercises</h2>
                 {mostFrequentExercises.length > 0 ? (
                     <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                         {mostFrequentExercises.map(([name, count]) => (
@@ -156,7 +224,7 @@ export default async function DashboardPage({
                 </Link>
             </div>
 
-            {/* ✅ Weekly Workout Breakdown */}
+            {/* ✅ Weekly Breakdown */}
             {Object.entries(groupedByWeek).map(([week, workouts]) => {
                 const isCurrentWeek = week === currentWeek;
                 const allSets = workouts?.flatMap((w) =>
@@ -172,7 +240,9 @@ export default async function DashboardPage({
                     <details
                         key={week}
                         open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"
+                        className={`border rounded p-4 mt-4 ${isCurrentWeek
+                            ? "border-primary bg-primary/10"
+                            : "bg-base-200"
                             }`}
                     >
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
