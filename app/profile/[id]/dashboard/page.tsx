@@ -126,6 +126,8 @@ export default async function DashboardPage({
                 </div>
             </div>
 
+            
+
             {/* ✅ Most Frequent Exercises */}
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-2">🔥 Most Frequent Exercises</h2>
