@@ -38,7 +38,7 @@ app/
 
 utils/
 └── supabase/                # Supabase server/client helpers
-
+```
 
 ## 🔐 Example RLS Policy (for exercises table)
 
@@ -48,6 +48,7 @@ CREATE POLICY "Users can insert their own exercises"
   ON exercises
   FOR INSERT
   WITH CHECK (user_id = auth.uid());
+  ```
 
 
 ---
@@ -68,9 +69,8 @@ npm install
 # Add your Supabase URL and anon/public keys to .env.local
 
 
-### 🧭 Planned Features
+```
 
-```md
 ## 🔮 Planned Features
 
 - 📈 Workout volume and streak charts
