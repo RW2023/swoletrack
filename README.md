@@ -57,14 +57,17 @@ CREATE POLICY "Users can insert their own exercises"
 
 
 
-```bash
+
 # Clone the repo
+```bash
 git clone https://github.com/RW2023/swoletrack
 ```
 
 # Install dependencies
 ```bash
 cd swoletrac
+```
+```bash
 npm install
 ```
 
