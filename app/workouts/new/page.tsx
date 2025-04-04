@@ -1,3 +1,6 @@
+// app/workouts/new/page.tsx
+
+import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import WorkoutForm from "./workout-form";
@@ -25,6 +28,9 @@ export default async function NewWorkoutPage() {
         <div className="max-w-3xl mx-auto p-6">
             <h1 className="text-2xl font-bold mb-4">Log a New Workout</h1>
             <WorkoutForm exercises={exercises || []} />
+
+            {/* Fixed-positioned Quick Add FAB */}
+            <QuickAddFAB />
         </div>
     );
 }
