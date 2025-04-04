@@ -6,7 +6,6 @@ import { EnvVarWarning } from "@/components/env-var-warning";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import Link from "next/link";
-import Image from "next/image";
 import clsx from "clsx";
 
 const defaultUrl = process.env.VERCEL_URL
