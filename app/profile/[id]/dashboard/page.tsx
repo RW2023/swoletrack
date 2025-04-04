@@ -56,23 +56,23 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     const { data: workouts } = await supabase
         .from("workouts")
         .select(`
-            id,
-            date,
-            notes,
-            workout_exercises (
-                id,
-                exercise: exercises (
-                    name,
-                    category
-                ),
-                sets (
-                    set_number,
-                    reps,
-                    weight,
-                    duration
-                )
-            )
-        `)
+      id,
+      date,
+      notes,
+      workout_exercises (
+        id,
+        exercise: exercises (
+          name,
+          category
+        ),
+        sets (
+          set_number,
+          reps,
+          weight,
+          duration
+        )
+      )
+    `)
         .eq("user_id", user.id)
         .order("date", { ascending: false });
 
@@ -83,9 +83,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         groupedByWeek[weekLabel].push(workout);
     });
 
-    const allSets = workouts?.flatMap((w) =>
-        w.workout_exercises.flatMap((e: any) => e.sets)
-    ) || [];
+    const allSets =
+        workouts?.flatMap((w) => w.workout_exercises.flatMap((e: any) => e.sets)) || [];
 
     const totalWorkouts = workouts?.length || 0;
     const totalSets = allSets.length;
@@ -113,7 +112,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    // Streaks – normalize all workout dates to UTC midnight
+    // Streaks
     const workoutDates = Array.from(
         new Set(
             (workouts ?? []).map((w) => {
@@ -124,17 +123,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         )
     ).sort();
 
-    // Longest Streak
     let longestStreak = 0;
     let rollingStreak = 0;
     let prevDate: Date | null = null;
 
     for (const iso of workoutDates) {
         const currentDate = new Date(iso);
-        if (
-            prevDate &&
-            currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24
-        ) {
+        if (prevDate && currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24) {
             rollingStreak++;
         } else {
             rollingStreak = 1;
@@ -161,6 +156,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         }
     }
 
+    // Exercise Frequency
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((we: any) => {
@@ -176,156 +172,187 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
     const currentWeek = getWeekLabel(new Date().toISOString());
 
     return (
-        <div className="p-6 max-w-5xl mx-auto text-base-content">
-            <h1 className="text-2xl font-bold mb-6">{profile.name}'s Dashboard</h1>
+        <div className="p-6 max-w-5xl mx-auto text-base-content space-y-8">
+            <h1 className="text-3xl font-bold mb-2">{profile.name}'s Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+                Track your workouts, view stats, and maintain streaks.
+            </p>
 
-            {/* Summary Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className="rounded bg-base-200 p-4 text-center shadow-sm">
-                    <p className="text-sm text-muted-foreground">Total Workouts</p>
-                    <p className="text-2xl font-bold">{totalWorkouts}</p>
+            {/* --- Quick Stats (DaisyUI Stats) --- */}
+            <div className="stats shadow w-full bg-base-200">
+                <div className="stat">
+                    <div className="stat-title">Total Workouts</div>
+                    <div className="stat-value">{totalWorkouts}</div>
                 </div>
-                <div className="rounded bg-base-200 p-4 text-center shadow-sm">
-                    <p className="text-sm text-muted-foreground">Total Sets</p>
-                    <p className="text-2xl font-bold">{totalSets}</p>
+                <div className="stat">
+                    <div className="stat-title">Total Sets</div>
+                    <div className="stat-value">{totalSets}</div>
                 </div>
-                <div className="rounded bg-base-200 p-4 text-center shadow-sm">
-                    <p className="text-sm text-muted-foreground">Total Volume (lbs)</p>
-                    <p className="text-2xl font-bold">{totalVolume.toLocaleString()}</p>
+                <div className="stat">
+                    <div className="stat-title">Total Volume</div>
+                    <div className="stat-value">{totalVolume.toLocaleString()} lbs</div>
                 </div>
             </div>
 
-            {/* PRs & Streaks */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                <div className="bg-base-200 p-4 rounded shadow-sm">
-                    <h2 className="text-lg font-semibold mb-2">🏆 Personal Records</h2>
-                    {personalRecords.length > 0 ? (
-                        <ul className="space-y-1 text-sm">
-                            {personalRecords.map(([name, weight]) => (
-                                <li key={name} className="flex justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* --- Personal Records (DaisyUI Card) --- */}
+                <div className="card bg-base-200 shadow">
+                    <div className="card-body">
+                        <h2 className="card-title flex items-center gap-2">
+                            <span>🏆</span>
+                            Personal Records
+                        </h2>
+                        {personalRecords.length > 0 ? (
+                            <ul className="mt-2 space-y-1 text-sm">
+                                {personalRecords.map(([name, weight]) => (
+                                    <li key={name} className="flex justify-between">
+                                        <span>{name}</span>
+                                        <span className="font-semibold">{weight} lbs</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No PRs yet.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* --- Streaks (DaisyUI Card) --- */}
+                <div className="card bg-base-200 shadow">
+                    <div className="card-body">
+                        <h2 className="card-title flex items-center gap-2">
+                            <span>🔥</span>
+                            Streaks
+                        </h2>
+                        <div className="mt-2 text-sm">
+                            <p>
+                                Current:{" "}
+                                <span className="text-xl font-bold text-primary">{currentStreak}</span> days
+                            </p>
+                            <p>
+                                Longest:{" "}
+                                <span className="text-xl font-bold text-primary">{longestStreak}</span> days
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Streaks are counted by consecutive workout days.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* --- Most Frequent Exercises (DaisyUI Card) --- */}
+            <div className="card bg-base-200 shadow">
+                <div className="card-body">
+                    <h2 className="card-title">💪 Most Frequent Exercises</h2>
+                    {mostFrequentExercises.length > 0 ? (
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm mt-3">
+                            {mostFrequentExercises.map(([name, count]) => (
+                                <li
+                                    key={name}
+                                    className="rounded bg-base-100 p-2 flex justify-between items-center"
+                                >
                                     <span>{name}</span>
-                                    <span className="font-semibold">{weight} lbs</span>
+                                    <span className="badge badge-outline">{count}x</span>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className="text-muted-foreground text-sm">No PRs yet.</p>
+                        <p className="text-sm text-muted-foreground">No exercises logged yet.</p>
                     )}
                 </div>
-                <div className="bg-base-200 p-4 rounded shadow-sm">
-                    <h2 className="text-lg font-semibold mb-2">🔥 Streaks</h2>
-                    <p className="text-base font-medium">
-                        Current: <span className="text-xl font-bold">{currentStreak} days</span>
-                    </p>
-                    <p className="text-base font-medium">
-                        Longest: <span className="text-xl font-bold">{longestStreak} days</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Streaks are counted by consecutive workout days.
-                    </p>
-                </div>
             </div>
 
-            {/* Most Frequent Exercises */}
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">💪 Most Frequent Exercises</h2>
-                {mostFrequentExercises.length > 0 ? (
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-                        {mostFrequentExercises.map(([name, count]) => (
-                            <li
-                                key={name}
-                                className="bg-base-200 rounded p-3 flex justify-between items-center"
-                            >
-                                <span>{name}</span>
-                                <span className="text-muted-foreground">{count}x</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-muted-foreground">No exercises logged yet.</p>
-                )}
-            </div>
-
-            {/* Workouts Section */}
-            <div className="flex justify-between items-center mb-4">
+            {/* --- Workouts Section --- */}
+            <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Your Workouts</h2>
-                <Link href="/workouts/new" className="btn btn-success text-white">
+                <Link href="/workouts/new" className="btn btn-primary">
                     + Log New Workout
                 </Link>
             </div>
 
-            {Object.entries(groupedByWeek).map(([week, workouts]) => {
+            {(!workouts || workouts.length === 0) && (
+                <div className="alert alert-info shadow-sm">
+                    <div>
+                        <span>You have no workouts logged yet.</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Grouped by Week - Using DaisyUI Collapse */}
+            {Object.entries(groupedByWeek).map(([week, weekWorkouts]) => {
                 const isCurrentWeek = week === currentWeek;
-                const allSets = workouts?.flatMap((w) =>
+                const allSets = weekWorkouts?.flatMap((w) =>
                     w.workout_exercises.flatMap((e: any) => e.sets)
                 ) || [];
-                const totalSets = allSets.length;
-                const totalVolume = allSets.reduce(
+                const weekTotalSets = allSets.length;
+                const weekTotalVolume = allSets.reduce(
                     (sum, set: any) => sum + (set.reps ?? 0) * (set.weight ?? 0),
                     0
                 );
 
                 return (
-                    <details
+                    <div
                         key={week}
-                        open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"}`}
+                        className={`collapse collapse-plus border border-base-300 rounded-box bg-base-100 ${isCurrentWeek ? "collapse-open" : ""
+                            }`}
                     >
-                        <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
+                        <input type="checkbox" defaultChecked={isCurrentWeek} aria-label={`Toggle visibility for ${week}`} />
+                        <div className="collapse-title text-lg font-semibold flex items-center justify-between">
                             <span>{week}</span>
                             <span className="text-sm text-muted-foreground font-normal ml-4">
-                                {workouts?.length || 0} workout(s), {totalSets} sets, {totalVolume} lbs
+                                {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets,{" "}
+                                {weekTotalVolume} lbs
                             </span>
-                        </summary>
+                        </div>
+                        <div className="collapse-content">
+                            {/* List of workouts for the week */}
+                            <ul className="space-y-4 mt-2">
+                                {weekWorkouts?.map((workout) => (
+                                    <li key={workout.id} className="card bg-base-200 shadow-sm">
+                                        <div className="card-body space-y-2">
+                                            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                                <span>{new Date(workout.date).toLocaleDateString()}</span>
+                                                <DeleteWorkoutButton workoutId={workout.id} />
+                                            </div>
 
-                        <ul className="space-y-4 mt-2">
-                            {workouts?.map((workout) => (
-                                <li
-                                    key={workout.id}
-                                    className="border p-4 rounded bg-base-100 shadow-sm"
-                                >
-                                    <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
-                                        <span>{new Date(workout.date).toLocaleDateString()}</span>
-                                        <DeleteWorkoutButton workoutId={workout.id} />
-                                    </div>
+                                            {workout.notes && (
+                                                <p className="text-sm italic text-muted-foreground">
+                                                    📝 {workout.notes}
+                                                </p>
+                                            )}
 
-                                    {workout.notes && (
-                                        <p className="text-sm mt-1 italic text-muted-foreground">
-                                            📝 {workout.notes}
-                                        </p>
-                                    )}
-
-                                    {workout.workout_exercises.map((we: any) => (
-                                        <div key={we.id} className="mb-3">
-                                            <p className="font-medium flex items-center gap-1">
-                                                <span>{getCategoryIcon(we.exercise.category)}</span>
-                                                {we.exercise.name}
-                                                <span className="text-sm text-muted-foreground">
-                                                    ({we.exercise.category.replace("_", " ")})
-                                                </span>
-                                            </p>
-                                            <ul className="ml-4 mt-1 text-sm text-muted-foreground list-disc">
-                                                {we.sets.map((set: any, index: number) => (
-                                                    <li key={index}>
-                                                        {we.exercise.category === "cardio"
-                                                            ? `${set.duration} min${set.duration > 1 ? "s" : ""}`
-                                                            : `${set.reps} reps @ ${set.weight} lbs`}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                            {workout.workout_exercises.map((we: any) => (
+                                                <div key={we.id}>
+                                                    <p className="font-medium flex items-center gap-1 text-base">
+                                                        <span>{getCategoryIcon(we.exercise.category)}</span>
+                                                        {we.exercise.name}{" "}
+                                                        <span className="text-sm text-muted-foreground">
+                                                            ({we.exercise.category.replace("_", " ")})
+                                                        </span>
+                                                    </p>
+                                                    <ul className="ml-4 mt-1 text-sm text-muted-foreground list-disc">
+                                                        {we.sets.map((set: any, index: number) => (
+                                                            <li key={index}>
+                                                                {we.exercise.category === "cardio"
+                                                                    ? `${set.duration} min${set.duration > 1 ? "s" : ""
+                                                                    }`
+                                                                    : `${set.reps} reps @ ${set.weight} lbs`}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </li>
-                            ))}
-                        </ul>
-                    </details>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
                 );
             })}
 
-            {(!workouts || workouts.length === 0) && (
-                <p className="text-muted-foreground">No workouts logged yet.</p>
-            )}
-
+            {/* Floating Action Button */}
             <QuickAddFAB />
         </div>
     );
