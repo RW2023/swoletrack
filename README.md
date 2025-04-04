@@ -60,16 +60,17 @@ CREATE POLICY "Users can insert their own exercises"
 ```bash
 # Clone the repo
 git clone https://github.com/RW2023/swoletrack
+```
 
 # Install dependencies
+```bash
 cd swoletrac
 npm install
+```
 
 # Set up your Supabase project
 # Add your Supabase URL and anon/public keys to .env.local
 
-
-```
 
 ## 🔮 Planned Features
 
