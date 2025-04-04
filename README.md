@@ -81,4 +81,13 @@ npm install
 - ✅ Goal tracking
 - ⌚Integrating wearable data (FitbBit)
 
+## 💬 Why SwoleTrac?
+
+Most workout apps are bloated, ad-heavy, or too rigid. SwoleTrac is minimal, fast, and focused on **you** — with just the right balance of structure and flexibility to help you stay on track.
+
+## 📄 License
+
+MIT — use freely, remix boldly, and stay swole.
+
+
 
