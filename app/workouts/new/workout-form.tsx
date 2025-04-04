@@ -10,14 +10,22 @@ type Exercise = {
 };
 
 export default function WorkoutForm({ exercises }: { exercises: Exercise[] }) {
-    const [exerciseId, setExerciseId] = useState<string>("");
-    const [category, setCategory] = useState<string>("");
+    const [exerciseId, setExerciseId] = useState("");
+    const [category, setCategory] = useState("");
     const [sets, setSets] = useState<{ reps?: string; weight?: string; duration?: string }[]>([
         { reps: "", weight: "" },
     ]);
-    const [notes, setNotes] = useState<string>("");
+    const [notes, setNotes] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    // NEW: State to track the search term
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Filter exercises by search term
+    const filteredExercises = exercises.filter((ex) =>
+        ex.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const updateSet = (
         index: number,
@@ -30,14 +38,19 @@ export default function WorkoutForm({ exercises }: { exercises: Exercise[] }) {
     };
 
     const addSet = () => {
-        setSets((prev) => [...prev, category === "cardio" ? { duration: "" } : { reps: "", weight: "" }]);
+        setSets((prev) => [
+            ...prev,
+            category === "cardio" ? { duration: "" } : { reps: "", weight: "" },
+        ]);
     };
 
     const handleExerciseChange = (id: string) => {
         setExerciseId(id);
         const selected = exercises.find((ex) => ex.id === id);
         setCategory(selected?.category || "");
-        setSets([selected?.category === "cardio" ? { duration: "" } : { reps: "", weight: "" }]);
+        setSets([
+            selected?.category === "cardio" ? { duration: "" } : { reps: "", weight: "" },
+        ]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -62,8 +75,26 @@ export default function WorkoutForm({ exercises }: { exercises: Exercise[] }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Search input */}
             <div>
-                <label htmlFor="exercise-select" className="font-medium block mb-1">Select Exercise</label>
+                <label htmlFor="exercise-search" className="font-medium block mb-1">
+                    Search Exercises
+                </label>
+                <input
+                    id="exercise-search"
+                    type="text"
+                    className="block w-full p-2 border rounded mb-4"
+                    placeholder="Type to filter exercises..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            {/* Exercise dropdown */}
+            <div>
+                <label htmlFor="exercise-select" className="font-medium block mb-1">
+                    Select Exercise
+                </label>
                 <select
                     id="exercise-select"
                     value={exerciseId}
@@ -72,7 +103,7 @@ export default function WorkoutForm({ exercises }: { exercises: Exercise[] }) {
                     required
                 >
                     <option value="">Choose one...</option>
-                    {exercises.map((exercise) => (
+                    {filteredExercises.map((exercise) => (
                         <option key={exercise.id} value={exercise.id}>
                             {exercise.name} ({exercise.category})
                         </option>
@@ -138,9 +169,7 @@ export default function WorkoutForm({ exercises }: { exercises: Exercise[] }) {
             </div>
 
             {submitted && (
-                <p className="text-green-600 font-medium">
-                    Workout logged successfully!
-                </p>
+                <p className="text-green-600 font-medium">Workout logged successfully!</p>
             )}
 
             <button
