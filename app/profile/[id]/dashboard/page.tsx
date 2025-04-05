@@ -204,7 +204,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     <div className="card-body">
                         <h2 className="card-title flex items-center gap-2 text-lg">
                             <span>🏆</span>
-                            Personal Records
+                            {profile?.name ? `${profile.name}'s Personal Records` : 'Personal Records'}
                         </h2>
                         {personalRecords.length > 0 ? (
                             <ul className="mt-2 space-y-1 text-sm">
