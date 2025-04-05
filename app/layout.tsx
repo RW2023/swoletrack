@@ -16,7 +16,15 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "SwoleTrac",
   description: "A workout tracker for getting your swole on.",
+  icons: {
+    icon: "/favicon/favicon.ico",
+    shortcut: "/favicon/favicon.ico",
+    apple: "/favicon/web-app-manifest-192x192.png",
+  },
+  manifest: "/favicon/site.webmanifest",
+  themeColor: "#ffffff",
 };
+
 
 // ✅ Fonts
 const poppins = Poppins({
