@@ -4,16 +4,23 @@ import Link from "next/link";
 import { DeleteWorkoutButton } from "@/components/delete-workout-button";
 import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
 
-export const dynamic = "force-dynamic";
-export const dynamicParams = true;
+// Force no caching
 export const revalidate = 0;
+
+interface PageProps {
+    // Note: Using a Promise for `params` so we can `await` it.
+    params: Promise<{
+        id: string;
+    }>;
+}
 
 function getWeekLabel(dateStr: string) {
     const date = new Date(dateStr);
     const start = new Date(date);
-    start.setDate(date.getDate() - date.getDay() + 1);
+    start.setDate(date.getDate() - date.getDay() + 1); // Monday-based
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
+
     return `Week of ${start.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -36,18 +43,17 @@ function getCategoryIcon(category: string) {
     }
 }
 
-export default async function DashboardPage({
-    params,
-}: {
-    params: { id: string };
-}) {
+export default async function DashboardPage({ params }: PageProps) {
+    // 1) Await the params so Next.js doesn't complain.
+    const { id } = await params;
+
+    // 2) Now use `id` as before.
     const supabase = await createClient();
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // ✅ Secure route: logged-in user must match URL param
-    if (!user || user.id !== params.id) {
+    if (!user || user.id !== id) {
         notFound();
     }
 
@@ -57,7 +63,9 @@ export default async function DashboardPage({
         .eq("id", user.id)
         .single();
 
-    if (!profile) notFound();
+    if (!profile) {
+        notFound();
+    }
 
     const { data: workouts } = await supabase
         .from("workouts")
@@ -82,6 +90,7 @@ export default async function DashboardPage({
         .eq("user_id", user.id)
         .order("date", { ascending: false });
 
+    // Group workouts by the week label
     const groupedByWeek: Record<string, typeof workouts> = {};
     workouts?.forEach((workout) => {
         const weekLabel = getWeekLabel(workout.date);
@@ -89,6 +98,7 @@ export default async function DashboardPage({
         groupedByWeek[weekLabel].push(workout);
     });
 
+    // Flatten all sets for total stats
     const allSets =
         workouts?.flatMap((w) => w.workout_exercises.flatMap((e: any) => e.sets)) || [];
 
@@ -99,15 +109,16 @@ export default async function DashboardPage({
         0
     );
 
+    // Personal records
     const personalRecordsMap = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((exerciseBlock: any) => {
-            const name = exerciseBlock.exercise.name;
+            const exerciseName = exerciseBlock.exercise.name;
             exerciseBlock.sets.forEach((set: any) => {
-                const currentPR = personalRecordsMap.get(name) || 0;
-                const setWeight = set.weight;
+                const currentPR = personalRecordsMap.get(exerciseName) || 0;
+                const setWeight = set.weight ?? 0;
                 if (setWeight > currentPR) {
-                    personalRecordsMap.set(name, setWeight);
+                    personalRecordsMap.set(exerciseName, setWeight);
                 }
             });
         });
@@ -117,6 +128,7 @@ export default async function DashboardPage({
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
+    // Calculate workout streaks
     const workoutDates = Array.from(
         new Set(
             (workouts ?? []).map((w) => {
@@ -159,18 +171,19 @@ export default async function DashboardPage({
         }
     }
 
+    // Most frequent exercises
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((we: any) => {
-            const name = we.exercise.name;
-            exerciseFrequency.set(name, (exerciseFrequency.get(name) || 0) + 1);
+            const exerciseName = we.exercise.name;
+            exerciseFrequency.set(exerciseName, (exerciseFrequency.get(exerciseName) || 0) + 1);
         });
     });
-
     const mostFrequentExercises = Array.from(exerciseFrequency.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
+    // Mark current week as expanded
     const currentWeek = getWeekLabel(new Date().toISOString());
 
     return (
@@ -180,6 +193,7 @@ export default async function DashboardPage({
                 Track your workouts, view stats, and maintain streaks.
             </p>
 
+            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-200 p-4 rounded shadow">
                 <div className="stat">
                     <div className="stat-title">Total Workouts</div>
@@ -195,18 +209,21 @@ export default async function DashboardPage({
                 </div>
             </div>
 
+            {/* Personal Records & Streaks */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="card bg-base-200 shadow">
                     <div className="card-body">
                         <h2 className="card-title flex items-center gap-2 text-lg">
                             <span>🏆</span>
-                            {profile?.name ? `${profile.name}'s Personal Records` : "Personal Records"}
+                            {profile?.name
+                                ? `${profile.name}'s Personal Records`
+                                : "Personal Records"}
                         </h2>
                         {personalRecords.length > 0 ? (
                             <ul className="mt-2 space-y-1 text-sm">
-                                {personalRecords.map(([name, weight]) => (
-                                    <li key={name} className="flex justify-between">
-                                        <span>{name}</span>
+                                {personalRecords.map(([exerciseName, weight]) => (
+                                    <li key={exerciseName} className="flex justify-between">
+                                        <span>{exerciseName}</span>
                                         <span className="font-semibold">{weight} lbs</span>
                                     </li>
                                 ))}
@@ -226,11 +243,17 @@ export default async function DashboardPage({
                         <div className="mt-2 text-sm">
                             <p>
                                 Current:{" "}
-                                <span className="text-xl font-bold text-primary">{currentStreak}</span> days
+                                <span className="text-xl font-bold text-primary">
+                                    {currentStreak}
+                                </span>{" "}
+                                days
                             </p>
                             <p>
                                 Longest:{" "}
-                                <span className="text-xl font-bold text-primary">{longestStreak}</span> days
+                                <span className="text-xl font-bold text-primary">
+                                    {longestStreak}
+                                </span>{" "}
+                                days
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Streaks are counted by consecutive workout days.
@@ -240,27 +263,31 @@ export default async function DashboardPage({
                 </div>
             </div>
 
+            {/* Most Frequent Exercises */}
             <div className="card bg-base-200 shadow">
                 <div className="card-body">
                     <h2 className="card-title text-lg">💪 Most Frequent Exercises</h2>
                     {mostFrequentExercises.length > 0 ? (
                         <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm mt-3">
-                            {mostFrequentExercises.map(([name, count]) => (
+                            {mostFrequentExercises.map(([exerciseName, count]) => (
                                 <li
-                                    key={name}
+                                    key={exerciseName}
                                     className="rounded bg-base-100 p-2 flex justify-between items-center"
                                 >
-                                    <span>{name}</span>
+                                    <span>{exerciseName}</span>
                                     <span className="badge badge-outline">{count}x</span>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className="text-sm text-muted-foreground">No exercises logged yet.</p>
+                        <p className="text-sm text-muted-foreground">
+                            No exercises logged yet.
+                        </p>
                     )}
                 </div>
             </div>
 
+            {/* "Add Workout" Button */}
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Your Workouts</h2>
                 <Link href="/workouts/new" className="btn btn-primary">
@@ -268,6 +295,7 @@ export default async function DashboardPage({
                 </Link>
             </div>
 
+            {/* No workouts message */}
             {(!workouts || workouts.length === 0) && (
                 <div className="alert alert-info shadow-sm">
                     <div>
@@ -276,13 +304,14 @@ export default async function DashboardPage({
                 </div>
             )}
 
+            {/* Grouped workouts by week */}
             {Object.entries(groupedByWeek).map(([week, weekWorkouts]) => {
                 const isCurrentWeek = week === currentWeek;
-                const allSets = weekWorkouts?.flatMap((w) =>
+                const allSetsThisWeek = weekWorkouts?.flatMap((w) =>
                     w.workout_exercises.flatMap((e: any) => e.sets)
                 ) || [];
-                const weekTotalSets = allSets.length;
-                const weekTotalVolume = allSets.reduce(
+                const weekTotalSets = allSetsThisWeek.length;
+                const weekTotalVolume = allSetsThisWeek.reduce(
                     (sum, set: any) => sum + (set.reps ?? 0) * (set.weight ?? 0),
                     0
                 );
@@ -297,7 +326,8 @@ export default async function DashboardPage({
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
                             <span>{week}</span>
                             <span className="text-sm text-muted-foreground font-normal ml-4">
-                                {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets, {weekTotalVolume} lbs
+                                {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets,{" "}
+                                {weekTotalVolume} lbs
                             </span>
                         </summary>
 
@@ -331,7 +361,8 @@ export default async function DashboardPage({
                                                 {we.sets.map((set: any, index: number) => (
                                                     <li key={index}>
                                                         {we.exercise.category === "cardio"
-                                                            ? `${set.duration} min${set.duration > 1 ? "s" : ""}`
+                                                            ? `${set.duration} min${set.duration > 1 ? "s" : ""
+                                                            }`
                                                             : `${set.reps} reps @ ${set.weight} lbs`}
                                                     </li>
                                                 ))}
