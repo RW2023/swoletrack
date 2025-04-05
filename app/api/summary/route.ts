@@ -25,16 +25,28 @@ export async function POST(req: NextRequest) {
     const distinctExercises = Array.from(new Set(exerciseList)).join(", ") || "None";
 
     const prompt = `
-Generate a short, friendly weekly workout summary for ${userName || "the user"}.
+You are a smart and motivating fitness coach. Your goal is to provide a short weekly summary to help ${userName || "the user"} understand their progress and stay motivated.
 
-This is their activity for the week of ${weekLabel}:
-- Total workouts: ${workouts.length}
+Use the following workout data to analyze their activity for the week of ${weekLabel}:
+
+- Number of workouts: ${workouts.length}
 - Exercises performed: ${distinctExercises}
 
-Workout Data (for context):
+Here is detailed workout data in JSON format:
 ${JSON.stringify(workouts, null, 2)}
 
-Respond with a short, motivational paragraph (2–3 sentences). Do not include a title or markdown.
+Your response should:
+- Be concise (2–3 sentences)
+- Highlight consistency, variety, or intensity if present
+- Encourage improvement or celebrate effort
+- Avoid technical jargon
+- Use friendly, casual, encouraging language
+- Do NOT include markdown or headings — just plain text
+
+Example tone:
+“Solid week of training! You showed consistency with compound lifts and made time for cardio. Keep it up and push for one more day next week!”
+
+Now write the summary.
 `;
 
     const completion = await openai.chat.completions.create({
