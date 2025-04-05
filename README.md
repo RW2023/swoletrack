@@ -72,7 +72,31 @@ npm install
 ```
 
 # Set up your Supabase project
+
 # Add your Supabase URL and anon/public keys to .env.local
+## 🔐 Environment Variables Example (`.env.local`)
+
+```env
+# Supabase Credentials
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Supabase Service Role (for server-side access, if needed)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Optional: Customize Next.js base URL (helpful for SSR/redirects)
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+### 🧠 Notes:
+
+- `NEXT_PUBLIC_` prefix exposes variables to the browser (client-side). Use carefully.
+- **Never** expose `SUPABASE_SERVICE_ROLE_KEY` to the client/browser.
+- Store this file as `.env.local` in your project root. It’s automatically loaded by Next.js.
+- Add `.env.local` to `.gitignore` to keep it out of version control.
+
+
+
 
 
 ## 🔮 Planned Features
