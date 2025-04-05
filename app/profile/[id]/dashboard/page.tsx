@@ -36,14 +36,20 @@ function getCategoryIcon(category: string) {
     }
 }
 
-export default async function DashboardPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
+export default async function DashboardPage({
+    params,
+}: {
+    params: { id: string };
+}) {
     const supabase = await createClient();
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user || user.id !== id) notFound();
+    // ✅ Secure route: logged-in user must match URL param
+    if (!user || user.id !== params.id) {
+        notFound();
+    }
 
     const { data: profile } = await supabase
         .from("profiles")
@@ -76,7 +82,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         .eq("user_id", user.id)
         .order("date", { ascending: false });
 
-    // Group workouts by week label
     const groupedByWeek: Record<string, typeof workouts> = {};
     workouts?.forEach((workout) => {
         const weekLabel = getWeekLabel(workout.date);
@@ -84,7 +89,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         groupedByWeek[weekLabel].push(workout);
     });
 
-    // Aggregate totals
     const allSets =
         workouts?.flatMap((w) => w.workout_exercises.flatMap((e: any) => e.sets)) || [];
 
@@ -95,7 +99,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         0
     );
 
-    // Personal Records
     const personalRecordsMap = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((exerciseBlock: any) => {
@@ -114,7 +117,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    // Streaks
     const workoutDates = Array.from(
         new Set(
             (workouts ?? []).map((w) => {
@@ -131,7 +133,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
 
     for (const iso of workoutDates) {
         const currentDate = new Date(iso);
-        if (prevDate && currentDate.getTime() - prevDate.getTime() === 1000 * 60 * 60 * 24) {
+        if (prevDate && currentDate.getTime() - prevDate.getTime() === 86400000) {
             rollingStreak++;
         } else {
             rollingStreak = 1;
@@ -140,7 +142,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         prevDate = currentDate;
     }
 
-    // Current Streak
     let currentStreak = 0;
     const utcToday = new Date();
     utcToday.setUTCHours(0, 0, 0, 0);
@@ -149,7 +150,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         const date = new Date(workoutDates[i]);
         date.setUTCHours(0, 0, 0, 0);
 
-        const diff = Math.floor((utcToday.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        const diff = Math.floor((utcToday.getTime() - date.getTime()) / 86400000);
         if (diff === 0 || diff === currentStreak + 1) {
             currentStreak++;
             utcToday.setUTCDate(utcToday.getUTCDate() - 1);
@@ -158,7 +159,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
         }
     }
 
-    // Exercise frequency
     const exerciseFrequency = new Map<string, number>();
     workouts?.forEach((workout) => {
         workout.workout_exercises.forEach((we: any) => {
@@ -180,31 +180,27 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 Track your workouts, view stats, and maintain streaks.
             </p>
 
-            {/* --- Quick Stats (using DaisyUI classes) --- */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-200 p-4 rounded shadow">
                 <div className="stat">
                     <div className="stat-title">Total Workouts</div>
-                    <div className="stat-value">8</div>
+                    <div className="stat-value">{totalWorkouts}</div>
                 </div>
                 <div className="stat">
                     <div className="stat-title">Total Sets</div>
-                    <div className="stat-value">22</div>
+                    <div className="stat-value">{totalSets}</div>
                 </div>
                 <div className="stat">
                     <div className="stat-title">Total Volume</div>
-                    <div className="stat-value">8,875 lbs</div>
+                    <div className="stat-value">{totalVolume.toLocaleString()} lbs</div>
                 </div>
             </div>
 
-
-            {/* --- PRs & Streaks grid --- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* --- Personal Records Card --- */}
                 <div className="card bg-base-200 shadow">
                     <div className="card-body">
                         <h2 className="card-title flex items-center gap-2 text-lg">
                             <span>🏆</span>
-                            {profile?.name ? `${profile.name}'s Personal Records` : 'Personal Records'}
+                            {profile?.name ? `${profile.name}'s Personal Records` : "Personal Records"}
                         </h2>
                         {personalRecords.length > 0 ? (
                             <ul className="mt-2 space-y-1 text-sm">
@@ -221,7 +217,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                     </div>
                 </div>
 
-                {/* --- Streaks Card --- */}
                 <div className="card bg-base-200 shadow">
                     <div className="card-body">
                         <h2 className="card-title flex items-center gap-2 text-lg">
@@ -245,7 +240,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
-            {/* --- Most Frequent Exercises --- */}
             <div className="card bg-base-200 shadow">
                 <div className="card-body">
                     <h2 className="card-title text-lg">💪 Most Frequent Exercises</h2>
@@ -267,7 +261,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             </div>
 
-            {/* --- Workouts Section --- */}
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Your Workouts</h2>
                 <Link href="/workouts/new" className="btn btn-primary">
@@ -283,7 +276,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 </div>
             )}
 
-            {/* --- Keep <details> for each week (the original toggling approach) --- */}
             {Object.entries(groupedByWeek).map(([week, weekWorkouts]) => {
                 const isCurrentWeek = week === currentWeek;
                 const allSets = weekWorkouts?.flatMap((w) =>
@@ -305,8 +297,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
                             <span>{week}</span>
                             <span className="text-sm text-muted-foreground font-normal ml-4">
-                                {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets,{" "}
-                                {weekTotalVolume} lbs
+                                {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets, {weekTotalVolume} lbs
                             </span>
                         </summary>
 
@@ -340,8 +331,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                                                 {we.sets.map((set: any, index: number) => (
                                                     <li key={index}>
                                                         {we.exercise.category === "cardio"
-                                                            ? `${set.duration} min${set.duration > 1 ? "s" : ""
-                                                            }`
+                                                            ? `${set.duration} min${set.duration > 1 ? "s" : ""}`
                                                             : `${set.reps} reps @ ${set.weight} lbs`}
                                                     </li>
                                                 ))}
@@ -355,7 +345,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ id: 
                 );
             })}
 
-            {/* Floating Action Button */}
             <QuickAddFAB />
         </div>
     );
