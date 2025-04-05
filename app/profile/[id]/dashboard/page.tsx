@@ -188,7 +188,10 @@ export default async function DashboardPage({ params }: PageProps) {
 
     return (
         <div className="p-6 max-w-5xl mx-auto text-base-content space-y-8">
-            <h1 className="text-3xl font-bold mb-2">{profile.name}'s Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-2">
+                {profile?.name ? `${profile.name}'s Dashboard` : "Dashboard"}
+            </h1>
+
             <p className="text-sm text-muted-foreground">
                 Track your workouts, view stats, and maintain streaks.
             </p>
@@ -229,7 +232,7 @@ export default async function DashboardPage({ params }: PageProps) {
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No PRs yet.</p>
+                            <p className="text-sm text-muted-foreground">No PRs yet. Set the first one today!</p>
                         )}
                     </div>
                 </div>
@@ -281,7 +284,7 @@ export default async function DashboardPage({ params }: PageProps) {
                         </ul>
                     ) : (
                         <p className="text-sm text-muted-foreground">
-                            No exercises logged yet.
+                            No exercises logged yet. How old is this account{profile?.name ? ` ${profile.name}` : ""}? Lets GO 💪!
                         </p>
                     )}
                 </div>
