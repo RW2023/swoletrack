@@ -260,7 +260,13 @@ export default async function DashboardPage({ params }: PageProps) {
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Streaks are counted by consecutive workout days.
+                                {(!currentStreak && !longestStreak) && (
+                                    <span className="block mt-1 italic">
+                                        Every journey begins with a single step. Start today! 💪
+                                    </span>
+                                )}
                             </p>
+
                         </div>
                     </div>
                 </div>
