@@ -12,6 +12,9 @@ Originally created as a personal project, now shared for anyone who wants to tak
 - 📈 **View personal records** (PRs) by exercise
 - 🔥 **See current and longest workout streaks**
 - 📊 **Weekly breakdown** of total sets, volume, and exercises
+- 🤖 **AI-generated weekly training guidance** using OpenAI — personalized suggestions for what to train next, based on your activity
+  - Summaries are **generated once per day** and **stored in Supabase** for cost efficiency
+  - A **"Regenerate" button** allows users to manually refresh their weekly summary on demand
 - ⚡ **Quick add** workouts or exercises on the fly using a floating action button (FAB)
 - 🌙 **Light & dark mode** support using Tailwind’s `dark:` classes and custom HSL-based theming
 - 💅 Beautiful and responsive UI styled with Tailwind CSS and [DaisyUI](https://daisyui.com/)
@@ -23,6 +26,7 @@ Originally created as a personal project, now shared for anyone who wants to tak
 - **Styling:** Tailwind CSS + DaisyUI
 - **Fonts:** [Poppins](https://fonts.google.com/specimen/Poppins) (titles), [Karla](https://fonts.google.com/specimen/Karla) (body text)
 - **Charting:** (Planned) [Chart.js](https://www.chartjs.org/) via `react-chartjs-2` for future data visualizations
+- **AI:** OpenAI GPT-4 for workout insights & recommendations
 
 ## 📁 Folder Structure (Key Parts)
 
@@ -34,6 +38,7 @@ app/
 │   └── quick-add/           # Fast entry form for adding exercises
 └── components/
     ├── QuickAddFAB.tsx      # Floating action button
+    ├── WeeklySummary.tsx    # AI summary display and regenerate logic
     └── delete-workout-button.tsx  # Delete button component
 
 utils/
@@ -48,15 +53,11 @@ CREATE POLICY "Users can insert their own exercises"
   ON exercises
   FOR INSERT
   WITH CHECK (user_id = auth.uid());
-  ```
-
+```
 
 ---
 
 ### 🚀 Getting Started
-
-
-
 
 # Clone the repo
 ```bash
@@ -95,15 +96,11 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 - Store this file as `.env.local` in your project root. It’s automatically loaded by Next.js.
 - Add `.env.local` to `.gitignore` to keep it out of version control.
 
-
-
-
-
 ## 🔮 Planned Features
 
 - 📈 Workout volume and streak charts
 - ✅ Goal tracking
-- ⌚Integrating wearable data (FitbBit)
+- ⌚ Integrating wearable data (Fitbit)
 
 ## 💬 Why SwoleTrac?
 
@@ -112,6 +109,3 @@ Most workout apps are bloated, ad-heavy, or too rigid. SwoleTrac is minimal, fas
 ## 📄 License
 
 MIT — use freely, remix boldly, and stay swole.
-
-
-
