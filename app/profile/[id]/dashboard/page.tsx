@@ -36,7 +36,7 @@ function getCategoryIcon(category: string) {
         case "cardio":
             return "🔥";
         case "calisthenics":
-            return "🠸‍♂️";
+            return "🤸‍♂️";
         default:
             return "💪";
     }
@@ -297,14 +297,13 @@ export default async function DashboardPage({ params }: PageProps) {
                     <details
                         key={week}
                         open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 shadow-sm ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"
-                            }`}
+                        className={`border rounded p-4 mt-4 shadow-sm ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"}`}
                     >
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
                             <span>{week}</span>
-                            <span className="text-sm text-muted-foreground font-normal ml-4">
-                                {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets, {weekTotalVolume} lbs
-                            </span>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-normal ml-4">
+                                <span>{weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets, {weekTotalVolume} lbs</span>
+                            </div>
                         </summary>
 
                         <WeeklySummary
@@ -312,7 +311,6 @@ export default async function DashboardPage({ params }: PageProps) {
                             workouts={weekWorkouts ?? []}
                             userName={profile.name}
                         />
-
 
                         <ul className="space-y-4 mt-2">
                             {weekWorkouts?.map((workout) => (
