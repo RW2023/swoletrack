@@ -57,25 +57,26 @@ CREATE POLICY "Users can insert their own exercises"
 
 ---
 
-### 🚀 Getting Started
+## 🚀 Getting Started
 
-# Clone the repo
+### 📦 Clone the repo
 ```bash
 git clone https://github.com/RW2023/swoletrack
 ```
 
-# Install dependencies
+### 📥 Install dependencies
 ```bash
 cd swoletrac
-```
-```bash
 npm install
 ```
 
-# Set up your Supabase project
+### 🔧 Set up your Supabase project
 
-# Add your Supabase URL and anon/public keys to .env.local
-## 🔐 Environment Variables Example (`.env.local`)
+Create a project at [supabase.com](https://supabase.com/) and add your environment variables below.
+
+### 🛠️ Add environment variables to `.env.local`
+
+#### 🔐 Example (`.env.local`)
 
 ```env
 # Supabase Credentials
@@ -89,7 +90,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
-### 🧠 Notes:
+#### 📌 Notes:
 
 - `NEXT_PUBLIC_` prefix exposes variables to the browser (client-side). Use carefully.
 - **Never** expose `SUPABASE_SERVICE_ROLE_KEY` to the client/browser.
