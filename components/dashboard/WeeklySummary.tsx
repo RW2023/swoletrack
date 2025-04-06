@@ -53,10 +53,14 @@ export default function WeeklySummary({ week, workouts, userName }: WeeklySummar
             className="rounded-lg p-4 text-sm mb-4 border transition-colors
                  bg-green-100 text-green-900 border-green-300
                  dark:bg-green-900 dark:text-green-100 dark:border-green-700
-                 whitespace-pre-line"
+                 whitespace-pre-line space-y-2"
         >
-            <div className="flex justify-between items-start mb-1">
-                <span className="mr-2">🧠 {summary}</span>
+            <div className="flex items-start gap-2">
+                <span className="text-lg">🧠</span>
+                <p className="flex-1 leading-relaxed">{summary}</p>
+            </div>
+
+            <div className="flex justify-end">
                 <button
                     onClick={() => {
                         setRegenerating(true);
