@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { createClient } from "@/utils/supabase/server";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -8,6 +9,17 @@ const openai = new OpenAI({
 export async function POST(req: NextRequest) {
   try {
     const { workouts, userName, weekLabel } = await req.json();
+    const force = req.nextUrl.searchParams.get("force") === "true";
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // ✅ Validate inputs
     if (!workouts || !Array.isArray(workouts) || workouts.length === 0) {
@@ -16,13 +28,37 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // ✅ Check for cached summary unless force regeneration is requested
+    if (!force) {
+      const { data: existing } = await supabase
+        .from("summaries")
+        .select("summary, generated_at")
+        .eq("user_id", user.id)
+        .eq("week_label", weekLabel)
+        .maybeSingle();
+
+      if (existing?.summary) {
+        const generatedAt = new Date(existing.generated_at);
+        const now = new Date();
+        const sameDay =
+          generatedAt.getUTCFullYear() === now.getUTCFullYear() &&
+          generatedAt.getUTCMonth() === now.getUTCMonth() &&
+          generatedAt.getUTCDate() === now.getUTCDate();
+
+        if (sameDay) {
+          return NextResponse.json({ summary: existing.summary });
+        }
+      }
+    }
+
     const exerciseList = workouts
       .flatMap((w: any) =>
         w.workout_exercises.map((e: any) => e.exercise.name)
       )
       .filter(Boolean);
 
-    const distinctExercises = Array.from(new Set(exerciseList)).join(", ") || "None";
+    const distinctExercises =
+      Array.from(new Set(exerciseList)).join(", ") || "None";
 
     const prompt = `
 You are a knowledgeable and practical fitness assistant. Your goal is to help ${userName || "the user"} plan their next workout based on their recent training.
@@ -66,6 +102,16 @@ Now write your recommendation.
         { status: 502 }
       );
     }
+
+    // ✅ Store or update summary in Supabase
+    await supabase
+      .from("summaries")
+      .upsert({
+        user_id: user.id,
+        week_label: weekLabel,
+        summary,
+        generated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,week_label" });
 
     return NextResponse.json({ summary });
   } catch (err) {
