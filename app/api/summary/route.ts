@@ -25,28 +25,32 @@ export async function POST(req: NextRequest) {
     const distinctExercises = Array.from(new Set(exerciseList)).join(", ") || "None";
 
     const prompt = `
-You are a smart and motivating fitness coach. Your goal is to provide a short weekly summary to help ${userName || "the user"} understand their progress and stay motivated.
+You are a knowledgeable and practical fitness assistant. Your goal is to help ${userName || "the user"} plan their next workout based on their recent training.
 
-Use the following workout data to analyze their activity for the week of ${weekLabel}:
+Analyze the following workout data for the week of ${weekLabel} and follow these steps:
 
-- Number of workouts: ${workouts.length}
-- Exercises performed: ${distinctExercises}
+1. Determine which major muscle groups have already been trained. Common groups include: chest, back, legs, shoulders, arms, core.
+2. Identify the most frequently trained groups and those that may be undertrained.
+3. Recommend the next muscle group(s) to target in their upcoming workout. Base this on:
+   - Ensuring balanced development
+   - Allowing for recovery of recently trained groups
+   - Following general sports science principles for strength and hypertrophy training
 
-Here is detailed workout data in JSON format:
+Here is the workout data in JSON format:
 ${JSON.stringify(workouts, null, 2)}
 
 Your response should:
-- Be concise (2–3 sentences)
-- Highlight consistency, variety, or intensity if present
-- Encourage improvement or celebrate effort
+- Be concise (2–4 sentences)
+- Clearly state which muscle groups were trained this week
+- Recommend 1–2 muscle groups to target next, with a brief reason why
+- Use clear, simple, and helpful language
 - Avoid technical jargon
-- Use friendly, casual, encouraging language
 - Do NOT include markdown or headings — just plain text
 
 Example tone:
-“Solid week of training! You showed consistency with compound lifts and made time for cardio. Keep it up and push for one more day next week!”
+"You hit upper body hard this week with plenty of back and chest work. Your legs and core haven't seen much action — consider focusing on those next to keep things balanced and give your upper body time to recover."
 
-Now write the summary.
+Now write your recommendation.
 `;
 
     const completion = await openai.chat.completions.create({
