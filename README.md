@@ -28,6 +28,84 @@ Originally created as a personal project, now shared for anyone who wants to tak
 - **Charting:** (Planned) [Chart.js](https://www.chartjs.org/) via `react-chartjs-2` for future data visualizations
 - **AI:** OpenAI GPT-4 for workout insights & recommendations
 
+## 🗃️ Database Tables
+
+The app uses the following tables in Supabase:
+
+- `profiles`
+- `exercises`
+- `workouts`
+- `workout_exercises`
+- `sets`
+- `summaries`
+
+### 🧱 Table Creation SQL
+
+#### `profiles`
+```sql
+create table profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  name text
+);
+```
+
+#### `exercises`
+```sql
+create table exercises (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  name text not null,
+  category text not null,
+  created_at timestamp default now()
+);
+```
+
+#### `workouts`
+```sql
+create table workouts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  date date not null,
+  notes text,
+  created_at timestamp default now()
+);
+```
+
+#### `workout_exercises`
+```sql
+create table workout_exercises (
+  id uuid primary key default gen_random_uuid(),
+  workout_id uuid references workouts(id) on delete cascade,
+  exercise_id uuid references exercises(id) on delete cascade,
+  created_at timestamp default now()
+);
+```
+
+#### `sets`
+```sql
+create table sets (
+  id uuid primary key default gen_random_uuid(),
+  workout_exercise_id uuid references workout_exercises(id) on delete cascade,
+  set_number int,
+  reps int,
+  weight numeric,
+  duration numeric, -- for cardio in minutes
+  created_at timestamp default now()
+);
+```
+
+#### `summaries`
+```sql
+create table summaries (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  week_label text not null,
+  summary text,
+  generated_at timestamp default now(),
+  unique (user_id, week_label)
+);
+```
+
 ## 📁 Folder Structure (Key Parts)
 
 ```txt
