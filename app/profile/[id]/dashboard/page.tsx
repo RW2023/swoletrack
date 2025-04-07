@@ -268,7 +268,7 @@ export default async function DashboardPage({ params }: PageProps) {
             </div>
 
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Your Workouts</h2>
+                <h2 className="text-xl font-semibold">The Work</h2>
                 <Link href="/workouts/new" className="btn btn-primary">
                     + Log New Workout
                 </Link>
