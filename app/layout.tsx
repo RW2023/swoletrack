@@ -18,17 +18,15 @@ export const metadata = {
   description: "A workout tracker for getting your swole on.",
   icons: {
     icon: "/favicon/favicon.ico",
-    shortcut: "/favicon/favicon-96x96.png", 
+    shortcut: "/favicon/favicon-96x96.png",
     apple: "/favicon/apple-touch-icon.png",
   },
-  manifest: "/favicon/site.webmanifest",
+  // ✅ Removed `manifest` field — app/manifest.ts handles this
 };
 
 export const viewport = {
   themeColor: "#ffffff",
 };
-
-
 
 // ✅ Fonts
 const poppins = Poppins({
@@ -67,7 +65,6 @@ export default function RootLayout({
               <Link href="/" className="text-lg font-bold tracking-tight">
                 ST
               </Link>
-
             </div>
             <div className="flex-none">
               {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
