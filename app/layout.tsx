@@ -16,6 +16,20 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "SwoleTrac",
   description: "A workout tracker for getting your swole on.",
+  openGraph: {
+    title: "SwoleTrac",
+    description: "A workout tracker for getting your swole on.",
+    url: defaultUrl,
+    siteName: "SwoleTrac",
+    images: ["/opengraph-image.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SwoleTrac",
+    description: "Track your workouts and stay swole.",
+    images: ["/twitter-image.png"],
+  },
   icons: {
     icon: "/favicon/favicon.ico",
     shortcut: "/favicon/favicon-96x96.png",
@@ -50,26 +64,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={clsx(poppins.variable, karla.variable)}
     >
-      <head>
-        {/* PWA + iOS Meta */}
-        <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.webmanifest" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="SwoleTrac" />
-
-        {/* Open Graph / Social */}
-        <meta property="og:title" content="SwoleTrac" />
-        <meta property="og:description" content="Track your workouts and stay swole." />
-        <meta property="og:image" content="/favicon/og-image-1200x630.png" />
-        <meta property="og:type" content="website" />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="SwoleTrac" />
-        <meta name="twitter:description" content="Track your workouts and stay swole." />
-        <meta name="twitter:image" content="/favicon/twitter-card-1200x630.png" />
-      </head>
       <body className="min-h-screen flex flex-col">
         <ThemeProvider
           attribute="class"
