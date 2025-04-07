@@ -18,12 +18,16 @@ export const metadata = {
   description: "A workout tracker for getting your swole on.",
   icons: {
     icon: "/favicon/favicon.ico",
-    shortcut: "/favicon/favicon.ico",
-    apple: "/favicon/web-app-manifest-192x192.png",
+    shortcut: "/favicon/favicon-96x96.png", 
+    apple: "/favicon/apple-touch-icon.png",
   },
   manifest: "/favicon/site.webmanifest",
+};
+
+export const viewport = {
   themeColor: "#ffffff",
 };
+
 
 
 // ✅ Fonts
