@@ -13,15 +13,38 @@ const defaultUrl = process.env.VERCEL_URL
   : "http://localhost:3000";
 
 export const metadata = {
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL("https://swoletrack.vercel.app"),
   title: "SwoleTrac",
   description: "A workout tracker for getting your swole on.",
+  openGraph: {
+    title: "SwoleTrac",
+    description: "A workout tracker for getting your swole on.",
+    url: "https://swoletrack.vercel.app",
+    siteName: "SwoleTrac",
+    type: "website",
+    locale: "en",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "SwoleTrac social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SwoleTrac",
+    description: "A workout tracker for getting your swole on.",
+    images: ["/opengraph-image.png"],
+  },
   icons: {
     icon: "/favicon/favicon.ico",
     shortcut: "/favicon/favicon-96x96.png",
     apple: "/favicon/apple-touch-icon.png",
   },
 };
+
 
 export const viewport = {
   themeColor: "#0f172a",
