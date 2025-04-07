@@ -123,9 +123,61 @@ utils/
 └── supabase/                # Supabase server/client helpers
 ```
 
-## 🔐 Example RLS Policy (for exercises table)
+## 🔐 Row-Level Security (RLS) Policies
 
+All tables in SwoleTrac are secured with RLS (Row-Level Security). Below is a complete working example for the `exercises` table, along with prompts you can reuse with AI (like ChatGPT) to generate similar policies for your other tables.
+
+### ✅ Enable RLS for each table
 ```sql
+alter table exercises enable row level security;
+```
+
+### 🔐 Full Policy Example for `exercises`
+```sql
+-- Allow users to SELECT their own exercises
+create policy "Users can select their own exercises" on exercises
+  for select using (user_id = auth.uid());
+
+-- Allow users to INSERT their own exercises
+create policy "Users can insert their own exercises" on exercises
+  for insert with check (user_id = auth.uid());
+
+-- Allow users to UPDATE their own exercises
+create policy "Users can update their own exercises" on exercises
+  for update using (user_id = auth.uid());
+
+-- Allow users to DELETE their own exercises
+create policy "Users can delete their own exercises" on exercises
+  for delete using (user_id = auth.uid());
+```
+
+### 🤖 Suggested Prompt to Generate RLS for Another Table
+
+You can paste this into ChatGPT or use it as a template to generate similar policies:
+
+> Generate full RLS policies for the `workouts` table in Supabase. The table has a `user_id` column that should be used to restrict access so each user can only select, insert, update, and delete their own records. The policies should follow best practices and be safe for production.
+
+For join tables like `workout_exercises` or `sets`, update the prompt accordingly:
+
+> Generate secure RLS policies for the `sets` table. Each row links to `workout_exercises`, which in turn links to `workouts`, which has a `user_id`. Users should only be able to access sets that belong to their own workouts. Include `select`, `insert`, `update`, and `delete` policies.
+
+This setup lets you scale securely while keeping your schema clean and your logic DRY.sql
+create policy "Users can manage their sets" on sets
+  for all using (
+    exists (
+      select 1 from workout_exercises
+      join workouts on workouts.id = workout_exercises.workout_id
+      where workout_exercises.id = sets.workout_exercise_id and workouts.user_id = auth.uid()
+    )
+  ) with check (
+    exists (
+      select 1 from workout_exercises
+      join workouts on workouts.id = workout_exercises.workout_id
+      where workout_exercises.id = sets.workout_exercise_id and workouts.user_id = auth.uid()
+    )
+  );
+```
+sql
 -- Allow inserting only for the logged-in user
 CREATE POLICY "Users can insert their own exercises"
   ON exercises
