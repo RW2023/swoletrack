@@ -21,14 +21,12 @@ export const metadata = {
     shortcut: "/favicon/favicon-96x96.png",
     apple: "/favicon/apple-touch-icon.png",
   },
-  // ✅ Removed `manifest` field — app/manifest.ts handles this
 };
 
 export const viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#0f172a",
 };
 
-// ✅ Fonts
 const poppins = Poppins({
   weight: ["400", "600", "700"],
   subsets: ["latin"],
@@ -52,6 +50,26 @@ export default function RootLayout({
       suppressHydrationWarning
       className={clsx(poppins.variable, karla.variable)}
     >
+      <head>
+        {/* PWA + iOS Meta */}
+        <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="SwoleTrac" />
+
+        {/* Open Graph / Social */}
+        <meta property="og:title" content="SwoleTrac" />
+        <meta property="og:description" content="Track your workouts and stay swole." />
+        <meta property="og:image" content="/favicon/og-image-1200x630.png" />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="SwoleTrac" />
+        <meta name="twitter:description" content="Track your workouts and stay swole." />
+        <meta name="twitter:image" content="/favicon/twitter-card-1200x630.png" />
+      </head>
       <body className="min-h-screen flex flex-col">
         <ThemeProvider
           attribute="class"

@@ -6,8 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Swole",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#000000",
+    background_color: "#0f172a", // dark blue-ish
+    theme_color: "#0f172a",
     orientation: "portrait",
     icons: [
       {
