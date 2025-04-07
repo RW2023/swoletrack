@@ -16,20 +16,6 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "SwoleTrac",
   description: "A workout tracker for getting your swole on.",
-  openGraph: {
-    title: "SwoleTrac",
-    description: "A workout tracker for getting your swole on.",
-    url: defaultUrl,
-    siteName: "SwoleTrac",
-    images: ["/opengraph-image.png"],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "SwoleTrac",
-    description: "Track your workouts and stay swole.",
-    images: ["/twitter-image.png"],
-  },
   icons: {
     icon: "/favicon/favicon.ico",
     shortcut: "/favicon/favicon-96x96.png",
