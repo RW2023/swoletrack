@@ -127,35 +127,58 @@ export default async function DashboardPage({ params }: PageProps) {
         )
     ).sort();
 
-    let longestStreak = 0;
-    let rollingStreak = 0;
-    let prevDate: Date | null = null;
+    // Normalize and sort workout dates descending (latest to oldest)
+    const workoutDatesSorted = Array.from(
+        new Set((workouts ?? []).map((w) => {
+            const d = new Date(w.date);
+            d.setUTCHours(0, 0, 0, 0);
+            return d.toISOString();
+        }))
+    )
+        .map((iso) => new Date(iso))
+        .sort((a, b) => b.getTime() - a.getTime());
 
-    for (const iso of workoutDates) {
-        const currentDate = new Date(iso);
-        if (prevDate && currentDate.getTime() - prevDate.getTime() === 86400000) {
-            rollingStreak++;
-        } else {
-            rollingStreak = 1;
-        }
-        longestStreak = Math.max(longestStreak, rollingStreak);
-        prevDate = currentDate;
-    }
-
+    // === Calculate current streak ===
     let currentStreak = 0;
-    const utcToday = new Date();
-    utcToday.setUTCHours(0, 0, 0, 0);
+    let prev = new Date();
+    prev.setUTCHours(0, 0, 0, 0);
 
-    for (let i = workoutDates.length - 1; i >= 0; i--) {
-        const date = new Date(workoutDates[i]);
-        date.setUTCHours(0, 0, 0, 0);
-        const diff = Math.floor((utcToday.getTime() - date.getTime()) / 86400000);
-        if (diff === 0 || diff === currentStreak + 1) {
+    for (const date of workoutDatesSorted) {
+        const d = new Date(date);
+        d.setUTCHours(0, 0, 0, 0);
+
+        const diff = (prev.getTime() - d.getTime()) / 86400000;
+
+        if (diff === 0 || diff === 1) {
             currentStreak++;
-            utcToday.setUTCDate(utcToday.getUTCDate() - 1);
+            prev = d;
         } else {
             break;
         }
+    }
+
+    // === Calculate longest streak ===
+    let longestStreak = 1;
+    let tempStreak = 1;
+
+    for (let i = 1; i < workoutDatesSorted.length; i++) {
+        const prev = workoutDatesSorted[i - 1];
+        const curr = workoutDatesSorted[i];
+
+        const diff = (prev.getTime() - curr.getTime()) / 86400000;
+
+        if (diff === 1) {
+            tempStreak++;
+            longestStreak = Math.max(longestStreak, tempStreak);
+        } else {
+            tempStreak = 1;
+        }
+    }
+
+    // Handle edge case when no workouts
+    if (workoutDatesSorted.length === 0) {
+        currentStreak = 0;
+        longestStreak = 0;
     }
 
     const exerciseFrequency = new Map<string, number>();
