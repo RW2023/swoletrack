@@ -7,6 +7,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import Link from "next/link";
 import clsx from "clsx";
+import Head from "next/head";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -45,7 +46,6 @@ export const metadata = {
   },
 };
 
-
 export const viewport = {
   themeColor: "#0f172a",
 };
@@ -73,6 +73,23 @@ export default function RootLayout({
       suppressHydrationWarning
       className={clsx(poppins.variable, karla.variable)}
     >
+      <Head>
+        {/* iOS Splash Screens */}
+        <link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-640x1136.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-750x1334.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1125x2436.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1170x2532.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1284x2778.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-828x1792.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="/splash/splash-1242x2688.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1536x2048.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1668x2224.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-1668x2388.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-2048x2732.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 1112px) and (device-height: 834px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-2224x1668.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 1194px) and (device-height: 834px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-2388x1668.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 1366px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="/splash/splash-2732x2048.png" />
+      </Head>
       <body className="min-h-screen flex flex-col">
         <ThemeProvider
           attribute="class"
