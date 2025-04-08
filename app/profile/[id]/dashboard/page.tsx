@@ -287,6 +287,9 @@ export default async function DashboardPage({ params }: PageProps) {
                             No exercises logged yet. How old is this account{profile?.name ? ` ${profile.name}` : ""}? Let's GO 💪!
                         </p>
                     )}
+                    <Link href={`/profile/${user.id}/stats`} className="btn btn-secondary">
+                        View Exercise Stats
+                    </Link>
                 </div>
             </div>
 
@@ -295,6 +298,8 @@ export default async function DashboardPage({ params }: PageProps) {
                 <Link href="/workouts/new" className="btn btn-primary">
                     + Log New Workout
                 </Link>
+                
+
             </div>
 
             {(!workouts || workouts.length === 0) && (
