@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function QuickAddExercisePage() {
     const [name, setName] = useState('');
     const [category, setCategory] = useState('weight_training');
+    const [muscleGroup, setMuscleGroup] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
 
@@ -14,7 +15,8 @@ export default function QuickAddExercisePage() {
 
         const res = await fetch('/api/quick-add-exercise', {
             method: 'POST',
-            body: JSON.stringify({ name, category }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, category, muscle_group: muscleGroup }),
         });
 
         const data = await res.json();
@@ -24,7 +26,6 @@ export default function QuickAddExercisePage() {
             return;
         }
 
-        // ✅ Go back to previous page (e.g., Dashboard)
         router.back();
     };
 
@@ -43,8 +44,11 @@ export default function QuickAddExercisePage() {
                         required
                     />
                 </div>
+
                 <div>
-                    <label htmlFor="category" className="block font-medium mb-1">Category</label>
+                    <label htmlFor="category" className="block font-medium mb-1">
+                        Category
+                    </label>
                     <select
                         id="category"
                         className="select select-bordered w-full"
@@ -54,6 +58,29 @@ export default function QuickAddExercisePage() {
                         <option value="weight_training">Weight Training</option>
                         <option value="cardio">Cardio</option>
                         <option value="calisthenics">Calisthenics</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label htmlFor="muscleGroup" className="block font-medium mb-1">
+                        Muscle Group
+                    </label>
+                    <select
+                        id="muscleGroup"
+                        className="select select-bordered w-full"
+                        value={muscleGroup}
+                        onChange={(e) => setMuscleGroup(e.target.value)}
+                        required
+                    >
+                        <option value="">Select Muscle Group</option>
+                        <option value="Chest">Chest</option>
+                        <option value="Back">Back</option>
+                        <option value="Legs">Legs</option>
+                        <option value="Arms">Arms</option>
+                        <option value="Shoulders">Shoulders</option>
+                        <option value="Core">Core</option>
+                        <option value="Cardio">Cardio</option>
+                        <option value="Full Body">Full Body</option>
                     </select>
                 </div>
 
