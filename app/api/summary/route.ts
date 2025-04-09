@@ -8,7 +8,8 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { workouts, userName, weekLabel, force = false } = await req.json();
+    const { workouts, userName, weekLabel } = await req.json();
+    const force = req.nextUrl.searchParams.get("force") === "true";
 
     if (!workouts || !Array.isArray(workouts) || workouts.length === 0 || !weekLabel) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
