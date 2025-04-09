@@ -64,6 +64,14 @@ export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
                     ))}
                 </div>
             </div>
+            <div className="pt-1 pb-2">
+                <a
+                    href={`/profile/${userId}/dashboard`}
+                    className="btn btn-outline"
+                >
+                    ← Back to Dashboard
+                </a>
+            </div>
 
             {visibleGroups.map(([muscleGroup, exercises]) => (
                 <div key={muscleGroup} className="space-y-4 scroll-mt-20">
