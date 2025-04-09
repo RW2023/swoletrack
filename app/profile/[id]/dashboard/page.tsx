@@ -287,9 +287,13 @@ export default async function DashboardPage({ params }: PageProps) {
                             No exercises logged yet. How old is this account{profile?.name ? ` ${profile.name}` : ""}? Let's GO 💪!
                         </p>
                     )}
-                    <Link href={`/profile/${user.id}/stats`} className="btn btn-secondary">
+                    <Link
+                        href={`/profile/${user.id}/stats`}
+                        className="btn btn-outline border-base-content text-base-content hover:bg-base-200"
+                    >
                         View Exercise Stats
                     </Link>
+
                 </div>
             </div>
 
