@@ -6,12 +6,30 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function getPreviousWeekLabel(weekLabel: string): string {
+  try {
+    const dateStr = weekLabel.replace("Week of ", "");
+    const parsed = new Date(`${dateStr}, ${new Date().getFullYear()}`);
+    if (isNaN(parsed.getTime())) return "";
+    const previousWeek = new Date(parsed);
+    previousWeek.setDate(previousWeek.getDate() - 7);
+    const formatted = previousWeek.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    return `Week of ${formatted}`;
+  } catch {
+    return "";
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { workouts, userName, weekLabel } = await req.json();
+    const { workouts, userName, weekLabel, previousWeekLabel: clientPrevLabel } =
+      await req.json();
     const force = req.nextUrl.searchParams.get("force") === "true";
-    const supabase = await createClient();
 
+    const supabase = await createClient();
     const {
       data: { user },
       error: userError,
@@ -21,14 +39,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ✅ Validate inputs
+    // Validate workouts
     if (!workouts || !Array.isArray(workouts) || workouts.length === 0) {
       return NextResponse.json({
         summary: "No workouts to summarize this week.",
       });
     }
 
-    // ✅ Check for cached summary unless force regeneration is requested
+    // Determine previous week label (client or fallback)
+    const previousWeekLabel =
+      clientPrevLabel || getPreviousWeekLabel(weekLabel);
+
+    // Fetch previous week's summary (if any)
+    const { data: priorSummaryData } = await supabase
+      .from("summaries")
+      .select("summary")
+      .eq("user_id", user.id)
+      .eq("week_label", previousWeekLabel)
+      .maybeSingle();
+
+    const priorSummary = priorSummaryData?.summary || "";
+
+    // Check for cached summary unless force is true
     if (!force) {
       const { data: existing } = await supabase
         .from("summaries")
@@ -63,28 +95,28 @@ export async function POST(req: NextRequest) {
     const prompt = `
 You are a knowledgeable and practical fitness assistant. Your goal is to help ${userName || "the user"} plan their next workout based on their recent training.
 
-Analyze the following workout data for the week of ${weekLabel} and follow these steps:
+First, here's what the user did last week:
+${priorSummary || "No summary available for last week."}
 
-1. Determine which major muscle groups have already been trained. Common groups include: chest, back, legs, shoulders, arms, core.
-2. Identify the most frequently trained groups and those that may be undertrained.
-3. Recommend the next muscle group(s) to target in their upcoming workout. Base this on:
-   - Ensuring balanced development
-   - Allowing for recovery of recently trained groups
-   - Following general sports science principles for strength and hypertrophy training
+Now analyze the following workout data for the week of ${weekLabel}. Follow these steps:
 
-Here is the workout data in JSON format:
+1. Determine which major muscle groups were trained.
+2. Compare this week's training to last week.
+3. Recommend the next muscle group(s) to target.
+4. Encourage progress or balance based on trends across both weeks.
+
+Workout data in JSON:
 ${JSON.stringify(workouts, null, 2)}
 
 Your response should:
 - Be concise (2–4 sentences)
-- Clearly state which muscle groups were trained this week
-- Recommend 1–2 muscle groups to target next, with a brief reason why
-- Use clear, simple, and helpful language
-- Avoid technical jargon
-- Do NOT include markdown or headings — just plain text
+- Summarize what muscle groups were trained this week
+- Acknowledge progress (or not) from last week
+- Suggest what to train next and why
+- Use plain, helpful language. No markdown or headings.
 
 Example tone:
-"You hit upper body hard this week with plenty of back and chest work. Your legs and core haven't seen much action — consider focusing on those next to keep things balanced and give your upper body time to recover."
+"Nice work adding legs and shoulders this week after skipping them last time. Now that your lower body is covered, consider focusing on your back and core next to round things out."
 
 Now write your recommendation.
 `;
@@ -103,15 +135,17 @@ Now write your recommendation.
       );
     }
 
-    // ✅ Store or update summary in Supabase
     await supabase
       .from("summaries")
-      .upsert({
-        user_id: user.id,
-        week_label: weekLabel,
-        summary,
-        generated_at: new Date().toISOString(),
-      }, { onConflict: "user_id,week_label" });
+      .upsert(
+        {
+          user_id: user.id,
+          week_label: weekLabel,
+          summary,
+          generated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,week_label" }
+      );
 
     return NextResponse.json({ summary });
   } catch (err) {
