@@ -7,11 +7,12 @@ import WeeklySummary from "@/components/dashboard/WeeklySummary";
 import PersonalRecords from "@/components/dashboard/PersonalRecords";
 import WorkoutStreaks from "@/components/dashboard/WorkoutStreaks";
 import MostFrequentExercises from "@/components/dashboard/MostFrequentExercises";
+import DashboardStats from "@/components/dashboard/DashboardStats";
 
 export const revalidate = 0;
 
 interface PageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>; // ✅ await is required
 }
 
 function getWeekLabel(dateStr: string) {
@@ -44,7 +45,7 @@ function getCategoryIcon(category: string) {
 }
 
 export default async function DashboardPage({ params }: PageProps) {
-    const { id } = params;
+    const { id } = await params; // ✅ proper fix
     const supabase = await createClient();
     const {
         data: { user },
@@ -128,7 +129,6 @@ export default async function DashboardPage({ params }: PageProps) {
         .map((iso) => new Date(iso))
         .sort((a, b) => b.getTime() - a.getTime());
 
-    // === Calculate current streak ===
     let currentStreak = 0;
     let prev = new Date();
     prev.setUTCHours(0, 0, 0, 0);
@@ -136,7 +136,6 @@ export default async function DashboardPage({ params }: PageProps) {
     for (const date of workoutDatesSorted) {
         const d = new Date(date);
         d.setUTCHours(0, 0, 0, 0);
-
         const diff = (prev.getTime() - d.getTime()) / 86400000;
 
         if (diff === 0 || diff === 1) {
@@ -147,14 +146,12 @@ export default async function DashboardPage({ params }: PageProps) {
         }
     }
 
-    // === Calculate longest streak ===
     let longestStreak = 1;
     let tempStreak = 1;
 
     for (let i = 1; i < workoutDatesSorted.length; i++) {
         const prev = workoutDatesSorted[i - 1];
         const curr = workoutDatesSorted[i];
-
         const diff = (prev.getTime() - curr.getTime()) / 86400000;
 
         if (diff === 1) {
@@ -194,20 +191,11 @@ export default async function DashboardPage({ params }: PageProps) {
                 Track your workouts, view stats, and maintain streaks.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-base-200 p-4 rounded shadow">
-                <div className="stat">
-                    <div className="stat-title">Total Workouts</div>
-                    <div className="stat-value">{totalWorkouts}</div>
-                </div>
-                <div className="stat">
-                    <div className="stat-title">Total Sets</div>
-                    <div className="stat-value">{totalSets}</div>
-                </div>
-                <div className="stat">
-                    <div className="stat-title">Total Volume</div>
-                    <div className="stat-value">{totalVolume.toLocaleString()} lbs</div>
-                </div>
-            </div>
+            <DashboardStats
+                totalWorkouts={totalWorkouts}
+                totalSets={totalSets}
+                totalVolume={totalVolume}
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <PersonalRecords records={personalRecords} name={profile?.name} />
@@ -219,7 +207,6 @@ export default async function DashboardPage({ params }: PageProps) {
                 userId={user.id}
                 userName={profile?.name}
             />
-
 
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">The Work</h2>
