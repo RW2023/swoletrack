@@ -4,13 +4,12 @@ import Link from "next/link";
 import { DeleteWorkoutButton } from "@/components/delete-workout-button";
 import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
 import WeeklySummary from "@/components/dashboard/WeeklySummary";
+import PersonalRecords from "@/components/dashboard/PersonalRecords";
 
 export const revalidate = 0;
 
 interface PageProps {
-    params: Promise<{
-        id: string;
-    }>;
+    params: { id: string };
 }
 
 function getWeekLabel(dateStr: string) {
@@ -43,7 +42,7 @@ function getCategoryIcon(category: string) {
 }
 
 export default async function DashboardPage({ params }: PageProps) {
-    const { id } = await params;
+    const { id } = params;
     const supabase = await createClient();
     const {
         data: { user },
@@ -117,17 +116,6 @@ export default async function DashboardPage({ params }: PageProps) {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    const workoutDates = Array.from(
-        new Set(
-            (workouts ?? []).map((w) => {
-                const d = new Date(w.date);
-                d.setUTCHours(0, 0, 0, 0);
-                return d.toISOString();
-            })
-        )
-    ).sort();
-
-    // Normalize and sort workout dates descending (latest to oldest)
     const workoutDatesSorted = Array.from(
         new Set((workouts ?? []).map((w) => {
             const d = new Date(w.date);
@@ -175,7 +163,6 @@ export default async function DashboardPage({ params }: PageProps) {
         }
     }
 
-    // Handle edge case when no workouts
     if (workoutDatesSorted.length === 0) {
         currentStreak = 0;
         longestStreak = 0;
@@ -188,6 +175,7 @@ export default async function DashboardPage({ params }: PageProps) {
             exerciseFrequency.set(name, (exerciseFrequency.get(name) || 0) + 1);
         });
     });
+
     const mostFrequentExercises = Array.from(exerciseFrequency.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
@@ -220,26 +208,7 @@ export default async function DashboardPage({ params }: PageProps) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="card bg-base-200 shadow">
-                    <div className="card-body">
-                        <h2 className="card-title flex items-center gap-2 text-lg">
-                            <span>🏆</span>
-                            {profile?.name ? `${profile.name}'s Personal Records` : "Personal Records"}
-                        </h2>
-                        {personalRecords.length > 0 ? (
-                            <ul className="mt-2 space-y-1 text-sm">
-                                {personalRecords.map(([name, weight]) => (
-                                    <li key={name} className="flex justify-between">
-                                        <span>{name}</span>
-                                        <span className="font-semibold">{weight} lbs</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No PRs yet. Set the first one today!</p>
-                        )}
-                    </div>
-                </div>
+                <PersonalRecords records={personalRecords} name={profile?.name} />
 
                 <div className="card bg-base-200 shadow">
                     <div className="card-body">
@@ -249,10 +218,12 @@ export default async function DashboardPage({ params }: PageProps) {
                         </h2>
                         <div className="mt-2 text-sm">
                             <p>
-                                Current: <span className="text-xl font-bold text-primary">{currentStreak}</span> days
+                                Current:{" "}
+                                <span className="text-xl font-bold text-primary">{currentStreak}</span> days
                             </p>
                             <p>
-                                Longest: <span className="text-xl font-bold text-primary">{longestStreak}</span> days
+                                Longest:{" "}
+                                <span className="text-xl font-bold text-primary">{longestStreak}</span> days
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Streaks are counted by consecutive workout days.
@@ -293,7 +264,6 @@ export default async function DashboardPage({ params }: PageProps) {
                     >
                         View Exercise Stats
                     </Link>
-
                 </div>
             </div>
 
@@ -302,8 +272,6 @@ export default async function DashboardPage({ params }: PageProps) {
                 <Link href="/workouts/new" className="btn btn-primary">
                     + Log New Workout
                 </Link>
-                
-
             </div>
 
             {(!workouts || workouts.length === 0) && (
@@ -316,9 +284,8 @@ export default async function DashboardPage({ params }: PageProps) {
 
             {Object.entries(groupedByWeek).map(([week, weekWorkouts]) => {
                 const isCurrentWeek = week === currentWeek;
-                const allSetsThisWeek = weekWorkouts?.flatMap((w) =>
-                    w.workout_exercises.flatMap((e: any) => e.sets)
-                ) || [];
+                const allSetsThisWeek =
+                    weekWorkouts?.flatMap((w) => w.workout_exercises.flatMap((e: any) => e.sets)) || [];
                 const weekTotalSets = allSetsThisWeek.length;
                 const weekTotalVolume = allSetsThisWeek.reduce(
                     (sum, set: any) => sum + (set.reps ?? 0) * (set.weight ?? 0),
@@ -329,12 +296,16 @@ export default async function DashboardPage({ params }: PageProps) {
                     <details
                         key={week}
                         open={isCurrentWeek}
-                        className={`border rounded p-4 mt-4 shadow-sm ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"}`}
+                        className={`border rounded p-4 mt-4 shadow-sm ${isCurrentWeek ? "border-primary bg-primary/10" : "bg-base-200"
+                            }`}
                     >
                         <summary className="font-semibold cursor-pointer text-lg mb-2 flex items-center justify-between">
                             <span>{week}</span>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground font-normal ml-4">
-                                <span>{weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets, {weekTotalVolume} lbs</span>
+                                <span>
+                                    {weekWorkouts?.length || 0} workout(s), {weekTotalSets} sets,{" "}
+                                    {weekTotalVolume} lbs
+                                </span>
                             </div>
                         </summary>
 
@@ -365,7 +336,10 @@ export default async function DashboardPage({ params }: PageProps) {
                                         <div key={we.id} className="mb-3">
                                             <p className="font-medium flex items-center gap-1">
                                                 <span>{getCategoryIcon(we.exercise.category)}</span>
-                                                {we.exercise.name} <span className="text-sm text-muted-foreground">({we.exercise.category.replace("_", " ")})</span>
+                                                {we.exercise.name}{" "}
+                                                <span className="text-sm text-muted-foreground">
+                                                    ({we.exercise.category.replace("_", " ")})
+                                                </span>
                                             </p>
                                             <ul className="ml-4 mt-1 text-sm text-muted-foreground list-disc">
                                                 {we.sets.map((set: any, index: number) => (
