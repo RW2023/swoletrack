@@ -6,6 +6,7 @@ import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
 import WeeklySummary from "@/components/dashboard/WeeklySummary";
 import PersonalRecords from "@/components/dashboard/PersonalRecords";
 import WorkoutStreaks from "@/components/dashboard/WorkoutStreaks";
+import MostFrequentExercises from "@/components/dashboard/MostFrequentExercises";
 
 export const revalidate = 0;
 
@@ -210,39 +211,15 @@ export default async function DashboardPage({ params }: PageProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <PersonalRecords records={personalRecords} name={profile?.name} />
-
                 <WorkoutStreaks currentStreak={currentStreak} longestStreak={longestStreak} />
-
             </div>
 
-            <div className="card bg-base-200 shadow">
-                <div className="card-body">
-                    <h2 className="card-title text-lg">💪 Most Frequent Exercises</h2>
-                    {mostFrequentExercises.length > 0 ? (
-                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm mt-3">
-                            {mostFrequentExercises.map(([name, count]) => (
-                                <li
-                                    key={name}
-                                    className="rounded bg-base-100 p-2 flex justify-between items-center"
-                                >
-                                    <span>{name}</span>
-                                    <span className="badge badge-outline">{count}x</span>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">
-                            No exercises logged yet. How old is this account{profile?.name ? ` ${profile.name}` : ""}? Let's GO 💪!
-                        </p>
-                    )}
-                    <Link
-                        href={`/profile/${user.id}/stats`}
-                        className="btn btn-outline border-base-content text-base-content hover:bg-base-200"
-                    >
-                        View Exercise Stats
-                    </Link>
-                </div>
-            </div>
+            <MostFrequentExercises
+                mostFrequent={mostFrequentExercises}
+                userId={user.id}
+                userName={profile?.name}
+            />
+
 
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">The Work</h2>
