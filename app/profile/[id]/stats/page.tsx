@@ -31,7 +31,7 @@ export default async function ExerciseStatsPage({ params }: PageProps) {
         );
     }
 
-    // Group and format
+    // Group entries
     const grouped: Record<string, any[]> = {};
     for (const entry of setsData) {
         if (!grouped[entry.name]) grouped[entry.name] = [];
@@ -55,13 +55,26 @@ export default async function ExerciseStatsPage({ params }: PageProps) {
         const isWeightBased = weights.length > 0;
 
         const setsByWeek: Record<string, number[]> = {};
+        const setsByDay: Record<string, number[]> = {};
+
         for (const s of sets) {
             const d = new Date(s.date);
             const monday = new Date(d);
             monday.setDate(d.getDate() - d.getDay() + 1);
             const weekStr = monday.toISOString().split("T")[0];
+            const dayStr = d.toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+            });
+
             if (!setsByWeek[weekStr]) setsByWeek[weekStr] = [];
-            if (s.weight > 0) setsByWeek[weekStr].push(s.weight);
+            if (!setsByDay[dayStr]) setsByDay[dayStr] = [];
+
+            if (s.weight > 0) {
+                setsByWeek[weekStr].push(s.weight);
+                setsByDay[dayStr].push(s.weight);
+            }
         }
 
         const sortedWeeks = Object.keys(setsByWeek).sort();
@@ -85,10 +98,9 @@ export default async function ExerciseStatsPage({ params }: PageProps) {
             setRange,
             progress,
             isWeightBased,
+            setsByDay,
         };
     });
 
-    return (
-        <ExerciseStatsClient userId={user.id} exerciseBlocks={exerciseBlocks} />
-    );
+    return <ExerciseStatsClient userId={user.id} exerciseBlocks={exerciseBlocks} />;
 }

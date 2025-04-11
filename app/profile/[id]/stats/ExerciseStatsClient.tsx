@@ -13,8 +13,7 @@ interface ExerciseBlock {
     setRange: number | null;
     progress: number | null;
     isWeightBased: boolean;
-    progressPerSet?: number | null;
-    progressColor?: string;
+    setsByDay: Record<string, number[]>;
 }
 
 interface Props {
@@ -59,8 +58,7 @@ export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
                     {anatomicalOrder.map((group) => (
                         <button
                             key={group}
-                            className={`btn btn-sm sm:btn-md btn-outline ${selectedGroup === group ? "btn-active" : ""
-                                }`}
+                            className={`btn btn-sm sm:btn-md btn-outline ${selectedGroup === group ? "btn-active" : ""}`}
                             onClick={() =>
                                 setSelectedGroup(group === selectedGroup ? null : group)
                             }
@@ -103,23 +101,18 @@ export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
                                 >
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-bold">{ex.name}</h3>
-                                        <span className="badge badge-outline">
-                                            {ex.totalSets} sets
-                                        </span>
+                                        <span className="badge badge-outline">{ex.totalSets} sets</span>
                                     </div>
 
                                     {ex.description && (
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            {ex.description}
-                                        </p>
+                                        <p className="text-sm text-muted-foreground mt-1">{ex.description}</p>
                                     )}
 
                                     <ul className="mt-2 text-sm space-y-1">
                                         {ex.isWeightBased ? (
                                             <>
                                                 <li>
-                                                    <strong>Total Volume:</strong>{" "}
-                                                    {ex.repsVolume.toLocaleString()} lbs
+                                                    <strong>Total Volume:</strong> {ex.repsVolume.toLocaleString()} lbs
                                                 </li>
                                                 <li>
                                                     <strong>Max Weight:</strong> {ex.max} lbs
@@ -142,6 +135,18 @@ export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
                                                             {ex.progress > 0 ? "+" : ""}
                                                             {ex.progress} lbs
                                                         </span>
+                                                    </li>
+                                                )}
+                                                {Object.entries(ex.setsByDay).length > 0 && (
+                                                    <li>
+                                                        <strong>By Day:</strong>
+                                                        <ul className="ml-2 list-disc">
+                                                            {Object.entries(ex.setsByDay).map(([day, weights]) => (
+                                                                <li key={day}>
+                                                                    {day}: avg {Math.round(weights.reduce((a, b) => a + b, 0) / weights.length)} lbs
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     </li>
                                                 )}
                                             </>
