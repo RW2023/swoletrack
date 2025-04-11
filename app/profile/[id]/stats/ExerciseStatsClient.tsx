@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import clsx from "clsx";
 
 interface ExerciseBlock {
     name: string;
@@ -13,7 +14,7 @@ interface ExerciseBlock {
     setRange: number | null;
     progress: number | null;
     isWeightBased: boolean;
-    setsByDay: Record<string, number[]>;
+    setsByDay?: Record<string, number[]>;
 }
 
 interface Props {
@@ -22,14 +23,7 @@ interface Props {
 }
 
 const anatomicalOrder = [
-    "Chest",
-    "Back",
-    "Shoulders",
-    "Arms",
-    "Legs",
-    "Core",
-    "Cardio",
-    "Other",
+    "Chest", "Back", "Shoulders", "Arms", "Legs", "Core", "Cardio", "Other",
 ];
 
 export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
@@ -58,7 +52,9 @@ export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
                     {anatomicalOrder.map((group) => (
                         <button
                             key={group}
-                            className={`btn btn-sm sm:btn-md btn-outline ${selectedGroup === group ? "btn-active" : ""}`}
+                            className={clsx("btn btn-sm sm:btn-md btn-outline", {
+                                "btn-active": selectedGroup === group,
+                            })}
                             onClick={() =>
                                 setSelectedGroup(group === selectedGroup ? null : group)
                             }
@@ -94,68 +90,100 @@ export default function ExerciseStatsClient({ userId, exerciseBlocks }: Props) {
                                 progressColor = "text-error";
                             }
 
+                            const allWeights =
+                                ex.setsByDay &&
+                                Object.values(ex.setsByDay).flat().filter((w) => w > 0);
+                            const avgWeight =
+                                allWeights && allWeights.length
+                                    ? Math.round(
+                                        allWeights.reduce((a, b) => a + b, 0) /
+                                        allWeights.length
+                                    )
+                                    : null;
+
                             return (
                                 <div
                                     key={ex.name}
-                                    className="rounded bg-base-100 p-4 border border-base-300 shadow-sm"
+                                    className="card bg-base-100 shadow border border-base-300"
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-bold">{ex.name}</h3>
-                                        <span className="badge badge-outline">{ex.totalSets} sets</span>
-                                    </div>
+                                    <div className="card-body">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <h3 className="card-title text-lg font-bold">{ex.name}</h3>
+                                            <div className="badge badge-outline">{ex.totalSets} sets</div>
+                                        </div>
 
-                                    {ex.description && (
-                                        <p className="text-sm text-muted-foreground mt-1">{ex.description}</p>
-                                    )}
-
-                                    <ul className="mt-2 text-sm space-y-1">
-                                        {ex.isWeightBased ? (
-                                            <>
-                                                <li>
-                                                    <strong>Total Volume:</strong> {ex.repsVolume.toLocaleString()} lbs
-                                                </li>
-                                                <li>
-                                                    <strong>Max Weight:</strong> {ex.max} lbs
-                                                </li>
-                                                <li>
-                                                    <strong>Min Weight:</strong> {ex.min} lbs
-                                                </li>
-                                                {ex.setRange !== null && (
-                                                    <li>
-                                                        <strong>Set Range:</strong>{" "}
-                                                        <span className="text-muted-foreground">
-                                                            {ex.setRange} lbs
-                                                        </span>
-                                                    </li>
-                                                )}
-                                                {ex.progress !== null && (
-                                                    <li>
-                                                        <strong>Progress:</strong>{" "}
-                                                        <span className={progressColor}>
-                                                            {ex.progress > 0 ? "+" : ""}
-                                                            {ex.progress} lbs
-                                                        </span>
-                                                    </li>
-                                                )}
-                                                {Object.entries(ex.setsByDay).length > 0 && (
-                                                    <li>
-                                                        <strong>By Day:</strong>
-                                                        <ul className="ml-2 list-disc">
-                                                            {Object.entries(ex.setsByDay).map(([day, weights]) => (
-                                                                <li key={day}>
-                                                                    {day}: avg {Math.round(weights.reduce((a, b) => a + b, 0) / weights.length)} lbs
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </li>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <li className="text-muted-foreground italic">
-                                                This exercise is not tracked by weight.
-                                            </li>
+                                        {ex.description && (
+                                            <p className="text-sm text-muted-foreground mb-2">
+                                                {ex.description}
+                                            </p>
                                         )}
-                                    </ul>
+
+                                        <ul className="text-sm space-y-1">
+                                            {ex.isWeightBased ? (
+                                                <>
+                                                    <li><strong>Total Volume:</strong> {ex.repsVolume.toLocaleString()} lbs</li>
+                                                    <li><strong>Max Weight:</strong> {ex.max} lbs</li>
+                                                    <li><strong>Min Weight:</strong> {ex.min} lbs</li>
+                                                    {avgWeight !== null && (
+                                                        <li>
+                                                            <strong>Average Weight:</strong>{" "}
+                                                            {avgWeight} lbs
+                                                        </li>
+                                                    )}
+                                                    {ex.setRange !== null && (
+                                                        <li>
+                                                            <strong>Set Range:</strong>{" "}
+                                                            <span className="text-muted-foreground">{ex.setRange} lbs</span>
+                                                        </li>
+                                                    )}
+                                                    {ex.progress !== null && (
+                                                        <li>
+                                                            <strong>Progress:</strong>{" "}
+                                                            <span className={progressColor}>
+                                                                {ex.progress > 0 ? "+" : ""}
+                                                                {ex.progress} lbs
+                                                            </span>
+                                                        </li>
+                                                    )}
+                                                    {ex.setsByDay && (
+                                                        <li className="mt-2">
+                                                            <details className="collapse collapse-arrow bg-base-200">
+                                                                <summary className="collapse-title text-sm font-medium">
+                                                                    Daily Breakdown
+                                                                </summary>
+                                                                <div className="collapse-content text-xs space-y-1 mt-2">
+                                                                    {Object.entries(ex.setsByDay)
+                                                                        .sort()
+                                                                        .map(([day, weights]) => {
+                                                                            const avg =
+                                                                                weights.length > 0
+                                                                                    ? Math.round(
+                                                                                        weights.reduce((a, b) => a + b, 0) /
+                                                                                        weights.length
+                                                                                    )
+                                                                                    : 0;
+                                                                            return (
+                                                                                <div key={day}>
+                                                                                    <strong>{day}:</strong>{" "}
+                                                                                    {weights.join(", ")} lbs{" "}
+                                                                                    <span className="text-muted-foreground">
+                                                                                        (avg: {avg} lbs)
+                                                                                    </span>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                </div>
+                                                            </details>
+                                                        </li>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <li className="text-muted-foreground italic">
+                                                    This exercise is not tracked by weight.
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
                                 </div>
                             );
                         })}
