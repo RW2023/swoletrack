@@ -2,12 +2,12 @@ import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
-import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
-import WeeklyWorkoutSection from "@/components/dashboard/WeeklyWorkoutSection";
-import PersonalRecords from "@/components/dashboard/PersonalRecords";
-import WorkoutStreaks from "@/components/dashboard/WorkoutStreaks";
-import MostFrequentExercises from "@/components/dashboard/MostFrequentExercises";
 import DashboardStats from "@/components/dashboard/DashboardStats";
+import MostFrequentExercises from "@/components/dashboard/MostFrequentExercises";
+import PersonalRecords from "@/components/dashboard/PersonalRecords";
+import QuickAddFAB from "@/components/dashboard/QuickAddFAB";
+import WorkoutStreaks from "@/components/dashboard/WorkoutStreaks";
+import WorkoutFilterWrapper from "@/components/dashboard/WorkoutFilterWrapper";
 
 export const revalidate = 0;
 
@@ -124,7 +124,6 @@ export default async function DashboardPage({ params }: PageProps) {
         const d = new Date(date);
         d.setUTCHours(0, 0, 0, 0);
         const diff = (prev.getTime() - d.getTime()) / 86400000;
-
         if (diff === 0 || diff === 1) {
             currentStreak++;
             prev = d;
@@ -202,13 +201,7 @@ export default async function DashboardPage({ params }: PageProps) {
                 </Link>
             </div>
 
-            {(!workouts || workouts.length === 0) && (
-                <div className="alert alert-info shadow-sm">
-                    <span>You have no workouts logged yet.</span>
-                </div>
-            )}
-
-            <WeeklyWorkoutSection
+            <WorkoutFilterWrapper
                 groupedByWeek={groupedByWeek}
                 currentWeekLabel={currentWeek}
                 userName={profile.name}
