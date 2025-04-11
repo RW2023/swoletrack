@@ -8,7 +8,6 @@ import PersonalRecords from "@/components/dashboard/PersonalRecords";
 import WorkoutStreaks from "@/components/dashboard/WorkoutStreaks";
 import MostFrequentExercises from "@/components/dashboard/MostFrequentExercises";
 import DashboardStats from "@/components/dashboard/DashboardStats";
-import { getCategoryIcon } from "@/utils/getCategoryIcon"; // ✅ Use shared util
 
 export const revalidate = 0;
 
