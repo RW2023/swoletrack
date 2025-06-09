@@ -98,7 +98,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {/* Navbar */}
-          <nav className="navbar border-b border-base-300 px-4 sm:px-6 bg-base-100 text-base-content">
+          <nav className="navbar border-b border-border px-4 sm:px-6 bg-background text-foreground">
             <div className="flex-1">
               <Link href="/" className="text-lg font-bold tracking-tight">
                 ST
@@ -110,12 +110,12 @@ export default function RootLayout({
           </nav>
 
           {/* Main */}
-          <main className="flex-grow w-full max-w-5xl mx-auto px-4 py-8 bg-base-100 text-base-content">
+          <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 bg-background text-foreground">
             {children}
           </main>
 
           {/* Footer */}
-          <footer className="footer p-4 border-t border-base-300 bg-base-100 text-sm text-base-content">
+          <footer className="footer p-4 border-t border-border bg-background text-sm text-foreground">
             <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <p>
                 Swole <span className="font-bold">Trac</span> &copy;{" "}
